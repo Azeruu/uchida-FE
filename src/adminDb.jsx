@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BarChart, Users, TrendingUp, Clock, RefreshCw, Download } from 'lucide-react';
 
 const API_URL = 'http://localhost:8080/api';
+export const API_URL_PUBLIC = 'https://uchida-be.onrender.com/api';
 
 export default function AdminDashboard({ onLogout }) {
   const [results, setResults] = useState([]);

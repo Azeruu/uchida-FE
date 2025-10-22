@@ -11,14 +11,14 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-2xl">
+    <div className="min-h-screen bg-gray-800 flex items-center justify-center p-4">
+      <div className="bg-slate-50/5 backdrop-blur-lg rounded-lg shadow-lg p-8 max-w-20xl w-full">
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Calculator className="w-10 h-10 text-indigo-600" />
+          <div className="md:w-40 md:h-40 w-20 h-20  rounded-full flex items-center justify-center mx-auto mb-6">
+            <img src="/LogoKIM.png" alt="logoUchida" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-800 mb-4">Test Uchida PT. Kwarsa Indah Murni</h1>
-          <p className="text-gray-600 text-lg">Pilih akses yang diinginkan</p>
+          <h1 className="md:text-4xl text-2xl font-bold text-white-800 mb-4">Test Uchida PT. Kwarsa Indah Murni</h1>
+          <p className="text-white-600 md:text-lg text-sm">Pilih akses yang diinginkan</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

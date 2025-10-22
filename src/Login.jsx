@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
 
 const API_URL = 'http://localhost:8080/api';
+export const API_URL_PUBLIC = 'https://uchida-be.onrender.com/api';
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState('');

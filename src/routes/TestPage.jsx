@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 const API_URL = "http://localhost:8080/api";
+export const API_URL_PUBLIC = 'https://uchida-be.onrender.com/api';
 
 export default function TestPage() {
   const [stage, setStage] = useState("register"); // register, ready, camera, testing, finished
