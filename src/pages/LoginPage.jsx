@@ -1,23 +1,22 @@
 import React, { useState } from 'react';
 import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import { toast } from "sonner"
+import { useNavigate } from 'react-router-dom';
+import config from '../config';
 
-const API_URL = 'http://localhost:8080/api';
-export const API_URL_PUBLIC = 'https://uchida-be.onrender.com/api';
-
-export default function Login({ onLogin }) {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-
+    
     try {
-      const response = await fetch(`${API_URL}/login`, {
+      const response = await fetch(`${config.apiUrl}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -29,27 +28,28 @@ export default function Login({ onLogin }) {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        onLogin(data.user);
+        toast.success("Login berhasil!");
+        navigate('/admin');
       } else {
-        setError(data.message || 'Login gagal');
+        toast.error(data.message || "Login gagal")
       }
     } catch (error) {
       console.error('Login error:', error);
-      setError('Terjadi kesalahan saat login');
+      toast.error("Terjadi kesalahan saat login")
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="bg-white/10 rounded-lg shadow-lg p-8 w-full max-w-md md:max-w-4xl">
         <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16  bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Lock className="w-8 h-8 text-indigo-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-800">Selamat Datang</h1>
-          <p className="text-gray-600 mt-2">Pilih akses yang diinginkan</p>
+          <h1 className="text-2xl font-bold text-indigo-400">Selamat Datang</h1>
+          <p className="text-indigo-200 text-xs mt-2">Pilih akses yang diinginkan</p>
         </div>
 
         {/* Guest Access Button */}
@@ -63,11 +63,11 @@ export default function Login({ onLogin }) {
         </div>
 
         {/* Admin Login Form */}
-        <div className="border-t pt-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">Login Admin</h3>
+        <div className="border-t pt-3 border-indigo-300/50">
+          <h3 className="text-xl  font-semibold text-indigo-400 mb-4 text-center">Login Admin</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-indigo-400 mb-2">
                 <Mail className="w-4 h-4 inline mr-1" />
                 Email
               </label>
@@ -75,14 +75,14 @@ export default function Login({ onLogin }) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin.kim@gmail.com"
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                placeholder="example@gmail.com"
+                className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:border-indigo-500 focus:outline-none"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-indigo-400 mb-2">
                 <Lock className="w-4 h-4 inline mr-1" />
                 Password
               </label>
@@ -91,8 +91,8 @@ export default function Login({ onLogin }) {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Masukkan password"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none pr-12"
+                  placeholder="**********"
+                  className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:border-indigo-500 focus:outline-none pr-12"
                   required
                 />
                 <button
@@ -104,12 +104,6 @@ export default function Login({ onLogin }) {
                 </button>
               </div>
             </div>
-
-            {error && (
-              <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
 
             <button
               type="submit"
