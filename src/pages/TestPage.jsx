@@ -18,9 +18,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { toast } from "sonner";
-
-const API_URL = "http://localhost:8080/api";
-export const API_URL_PUBLIC = "https://uchida-be.onrender.com/api";
+import config from "../config";
 
 const TEST_DURATION = 15 * 60; // 15 menit dalam detik
 
@@ -51,7 +49,7 @@ export default function TestPage() {
   // Load config from backend
   const loadConfig = async () => {
     try {
-      const res = await fetch(`${API_URL}/config`);
+      const res = await fetch(`${config.apiUrl}/config`);
       const data = await res.json();
       if (res.ok && data.data) {
         const cfg = data.data;
@@ -221,7 +219,7 @@ export default function TestPage() {
 
       // Save to backend
       try {
-        const response = await fetch(`${API_URL}/test-results`, {
+        const response = await fetch(`${config.apiUrl}/test-results`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
