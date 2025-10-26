@@ -1,12 +1,13 @@
 import * as React from "react";
 import { Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import config from "../config";
+
 
 interface Props {
   children: React.ReactNode;
 }
 
-const API_URL = 'http://localhost:8080/api';
 
 const ProtectedRoute: React.FC<Props> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -15,7 +16,7 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch(`${API_URL}/me`, {
+        const response = await fetch(`${config.apiUrl}/me`, {
           credentials: 'include' // Kirim cookies
         });
         const data = await response.json();
