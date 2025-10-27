@@ -332,7 +332,9 @@ export default function AdminDashboard() {
   const fetchResults = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${config.apiUrl}/test-results`);
+      const response = await fetch(`${config.apiUrl}/test-results`, {
+  credentials: 'include'
+});
       const data = await response.json();
 
       if (response.ok) {
@@ -348,7 +350,9 @@ export default function AdminDashboard() {
   // Fetch statistics
   const fetchStatistics = async () => {
     try {
-      const response = await fetch(`${config.apiUrl}/statistics`);
+      const response = await fetch(`${config.apiUrl}/statistics`, {
+  credentials: 'include'
+});
       const data = await response.json();
 
       if (response.ok) {
@@ -457,6 +461,7 @@ export default function AdminDashboard() {
     setSaving(true);
     try {
       const r = await fetch(`${config.apiUrl}/config`, {
+        credentials: "include",
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
