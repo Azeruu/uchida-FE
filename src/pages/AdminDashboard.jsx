@@ -1,13 +1,316 @@
-import{ useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   BarChart,
   Users,
   TrendingUp,
   Clock,
   RefreshCw,
+  X, // Ditambahkan untuk Modal
+  Eye, // Ditambahkan untuk tombol Aksi
 } from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import config from "../config";
 
+// --- KOMPONEN MODAL YANG ANDA BERIKAN ---
+// (Dengan sedikit penyesuaian impor)
+
+/**
+ * Modal Component untuk Detail Hasil Test
+ */
+const ResultDetailModal = ({ result, onClose }) => {
+  if (!result) return null;
+
+  // Kalkulasi data grafik dari answers
+  const calculateGraphData = () => {
+    if (!result.answers || !Array.isArray(result.answers)) {
+      return { timePerQuestion: [], questionsOverTime: [] };
+    }
+
+    // Grafik 1: Waktu per soal
+    const timePerQuestion = result.answers.map((ans, idx) => ({
+      soal: idx + 1,
+      waktu: Math.round((ans.timeSpent || 0) / 1000), // Convert ms to seconds
+    }));
+
+    // Grafik 2: Produktivitas per menit
+    const questionsOverTime = [];
+    // Membuat salinan array sebelum di-sort
+    const sortedAnswers = [...result.answers].sort(
+      (a, b) => (a.timeSpent || 0) - (b.timeSpent || 0)
+    );
+
+    if (sortedAnswers.length > 0) {
+      const questionsByMinute = {};
+      let cumulativeTime = 0;
+
+      sortedAnswers.forEach((ans) => {
+        cumulativeTime += ans.timeSpent || 0;
+        const minute = Math.floor(cumulativeTime / 60000) + 1;
+        questionsByMinute[minute] = (questionsByMinute[minute] || 0) + 1;
+      });
+
+      Object.keys(questionsByMinute).forEach((min) => {
+        questionsOverTime.push({
+          menit: parseInt(min),
+          jumlahSoal: questionsByMinute[min],
+        });
+      });
+    }
+
+    return { timePerQuestion, questionsOverTime };
+  };
+
+  const { timePerQuestion, questionsOverTime } = calculateGraphData();
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-gray-900 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 bg-gray-800 p-6 border-b border-gray-700 flex justify-between items-center z-10">
+          <div>
+            <h2 className="text-2xl font-bold text-white">
+              Detail Hasil Test - {result.participant_name}
+            </h2>
+            <p className="text-gray-400 text-sm mt-1">
+              {result.participant_email}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white transition"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Summary Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-white/10 rounded-lg p-4">
+              <p className="text-gray-400 text-sm">Skor</p>
+              <p className="text-2xl font-bold text-green-400">
+                {result.score}%
+              </p>
+            </div>
+            <div className="bg-white/10 rounded-lg p-4">
+              <p className="text-gray-400 text-sm">Benar/Total</p>
+              <p className="text-2xl font-bold text-blue-400">
+                {result.correct_answers}/{result.total_questions}
+              </p>
+            </div>
+            <div className="bg-white/10 rounded-lg p-4">
+              <p className="text-gray-400 text-sm">Total Waktu</p>
+              <p className="text-2xl font-bold text-yellow-400">
+                {result.total_time}s
+              </p>
+            </div>
+            <div className="bg-white/10 rounded-lg p-4">
+              <p className="text-gray-400 text-sm">Rata-rata/Soal</p>
+              <p className="text-2xl font-bold text-purple-400">
+                {(result.total_time / result.total_questions).toFixed(2)}s
+              </p>
+            </div>
+          </div>
+
+          {/* Grafik 1: Waktu per Soal */}
+          {timePerQuestion.length > 0 ? (
+            <div className="bg-white/10 rounded-lg p-6">
+              <h3 className="text-xl font-bold text-white mb-4">
+                📊 Waktu Pengerjaan per Soal
+              </h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={timePerQuestion}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                  <XAxis
+                    dataKey="soal"
+                    stroke="#999"
+                    label={{
+                      value: "Nomor Soal",
+                      position: "insideBottom",
+                      offset: -5,
+                      fill: "#999",
+                    }}
+                  />
+                  <YAxis
+                    stroke="#999"
+                    label={{
+                      value: "Waktu (detik)",
+                      angle: -90,
+                      position: "insideLeft",
+                      fill: "#999",
+                    }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#1f2937",
+                      border: "1px solid #4b5563",
+                    }}
+                    labelStyle={{ color: "#fff" }}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="waktu"
+                    stroke="#4f46e5"
+                    strokeWidth={2}
+                    dot={{ fill: "#4f46e5", r: 3 }}
+                    name="Waktu (detik)"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+              <p className="text-sm text-gray-400 mt-4 text-center">
+                Rata-rata waktu:{" "}
+                {(result.total_time / result.total_questions).toFixed(2)}{" "}
+                detik/soal
+              </p>
+            </div>
+          ) : (
+             <div className="bg-white/10 rounded-lg p-6 text-center text-gray-400">
+                Data grafik waktu pengerjaan tidak tersedia.
+             </div>
+          )}
+
+          {/* Grafik 2: Produktivitas per Menit */}
+          {questionsOverTime.length > 0 ? (
+            <div className="bg-white/10 rounded-lg p-6">
+              <h3 className="text-xl font-bold text-white mb-4">
+                📈 Produktivitas per Menit
+              </h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={questionsOverTime}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                  <XAxis
+                    dataKey="menit"
+                    stroke="#999"
+                    label={{
+                      value: "Menit ke-",
+                      position: "insideBottom",
+                      offset: -5,
+                      fill: "#999",
+                    }}
+                  />
+                  <YAxis
+                    stroke="#999"
+                    label={{
+                      value: "Jumlah Soal",
+                      angle: -90,
+                      position: "insideLeft",
+                      fill: "#999",
+                    }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#1f2937",
+                      border: "1px solid #4b5563",
+                    }}
+                    labelStyle={{ color: "#fff" }}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="jumlahSoal"
+                    stroke="#10b981"
+                    strokeWidth={2}
+                    dot={{ fill: "#10b981", r: 3 }}
+                    name="Jumlah Soal Dijawab"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+              <p className="text-sm text-gray-400 mt-4 text-center">
+                Total waktu test: {Math.ceil(result.total_time / 60)} menit
+              </p>
+            </div>
+          ) : (
+            <div className="bg-white/10 rounded-lg p-6 text-center text-gray-400">
+                Data grafik produktivitas tidak tersedia.
+            </div>
+          )}
+
+          {/* Detail Jawaban */}
+          <div className="bg-white/10 rounded-lg p-6">
+            <h3 className="text-xl font-bold text-white mb-4">
+              📝 Detail Jawaban (Menampilkan 50 pertama)
+            </h3>
+            <div className="max-h-96 overflow-y-auto">
+              {result.answers && result.answers.length > 0 ? (
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-800 sticky top-0">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-gray-300">No</th>
+                      <th className="px-4 py-2 text-left text-gray-300">
+                        Soal
+                      </th>
+                      <th className="px-4 py-2 text-center text-gray-300">
+                        Jawaban
+                      </th>
+                      <th className="px-4 py-2 text-center text-gray-300">
+                        Benar
+                      </th>
+                      <th className="px-4 py-2 text-center text-gray-300">
+                        Waktu
+                      </th>
+                      <th className="px-4 py-2 text-center text-gray-300">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {result.answers.slice(0, 50).map((ans, idx) => (
+                      <tr key={idx} className="border-b border-gray-700">
+                        <td className="px-4 py-2 text-gray-300">{idx + 1}</td>
+                        <td className="px-4 py-2 text-gray-300">
+                          {ans.question}
+                        </td>
+                        <td className="px-4 py-2 text-center text-gray-300">
+                          {ans.userAnswer}
+                        </td>
+                        <td className="px-4 py-2 text-center text-gray-300">
+                          {ans.correctAnswer}
+                        </td>
+                        <td className="px-4 py-2 text-center text-gray-400">
+                          {Math.round((ans.timeSpent || 0) / 1000)}s
+                        </td>
+                        <td className="px-4 py-2 text-center">
+                          {ans.isCorrect ? (
+                            <span className="text-green-400 font-bold">✓</span>
+                          ) : (
+                            <span className="text-red-400 font-bold">✗</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+               ) : (
+                <p className="text-center text-gray-400 py-4">
+                    Tidak ada data detail jawaban yang tersimpan.
+                </p>
+               )}
+              {result.answers && result.answers.length > 50 && (
+                <p className="text-center text-gray-400 text-xs mt-4">
+                  ... dan {result.answers.length - 50} jawaban lainnya tidak
+                  ditampilkan.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- KOMPONEN ADMIN DASHBOARD ANDA ---
 
 export default function AdminDashboard() {
   const [results, setResults] = useState([]);
@@ -21,6 +324,9 @@ export default function AdminDashboard() {
   const [saving, setSaving] = useState(false);
   const [questionsHistory, setQuestionsHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
+  
+  // --- STATE BARU UNTUK MODAL ---
+  const [selectedResult, setSelectedResult] = useState(null);
 
   // Fetch all results
   const fetchResults = async () => {
@@ -64,7 +370,7 @@ export default function AdminDashboard() {
       if (response.ok) {
         setQuestionsHistory(data.data);
       }
-    } catch (error) {
+    } catch (error){
       console.error("Error fetching questions history:", error);
     }
   };
@@ -221,13 +527,13 @@ export default function AdminDashboard() {
           </button>
         </div>
         <div className="bg-white/10 rounded-lg shadow-md p-6 mb-6">
-          <div className="flex items-center justify-between">
+          <div className="md:flex md:items-center md:justify-between grid grid-cols-1 gap-4 ">
             <div>
-              <h1 className="text-3xl font-bold text-indigo-400 flex items-center gap-2">
+              <h1 className="md:text-3xl text-2xl font-bold text-indigo-400 flex items-center gap-2">
                 <BarChart className="w-8 h-8 text-green-400" />
                 Admin Dashboard
               </h1>
-              <p className="text-gray-200 mt-1">
+              <p className="text-gray-200 mt-1 md:text-base text-xs">
                 Monitor dan kelola hasil test penjumlahan
               </p>
             </div>
@@ -341,7 +647,7 @@ export default function AdminDashboard() {
 
         {/* Questions History Section */}
         <div className="bg-white/10 rounded-lg shadow-md p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="md:flex md:items-center md:justify-between grid grid-cols-1 gap-4 mb-4">
             <h2 className="text-xl font-bold text-green-300">
               Riwayat Konfigurasi Soal
             </h2>
@@ -472,7 +778,7 @@ export default function AdminDashboard() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 md:text-base text-xs">
               {["all", "today", "week", "month"].map((filterOption) => (
                 <button
                   key={filterOption}
@@ -536,6 +842,10 @@ export default function AdminDashboard() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider">
                       Tanggal
                     </th>
+                    {/* KOLOM AKSI BARU */}
+                    <th className="px-6 py-3 text-center text-xs font-medium text-green-300 uppercase tracking-wider">
+                      Aksi
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white/10 divide-y divide-green-300">
@@ -575,6 +885,16 @@ export default function AdminDashboard() {
                           {formatDate(result.created_at)}
                         </div>
                       </td>
+                      {/* TOMBOL AKSI BARU */}
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <button
+                          onClick={() => setSelectedResult(result)}
+                          className="text-indigo-400 hover:text-indigo-200"
+                          title="Lihat Detail"
+                        >
+                          <Eye className="w-5 h-5" />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -589,6 +909,13 @@ export default function AdminDashboard() {
           Refresh
         </div>
       </div>
+
+      {/* --- MEMANGGIL KOMPONEN MODAL --- */}
+      {/* Ini akan me-render modal jika selectedResult tidak null */}
+      <ResultDetailModal
+        result={selectedResult}
+        onClose={() => setSelectedResult(null)}
+      />
     </div>
   );
 }

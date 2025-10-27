@@ -16,10 +16,16 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        console.log('Checking auth...');
         const response = await fetch(`${config.apiUrl}/me`, {
           credentials: 'include' // Kirim cookies
         });
+        console.log('Response status:', response.status); // Debug
+      console.log('Response headers:', response.headers); // Debug
+      
         const data = await response.json();
+        console.log('Response data:', data); // Debug
+      
         
         if (response.ok && data.success && data.user?.role === 'admin') {
           setIsAuthenticated(true);

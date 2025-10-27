@@ -329,6 +329,8 @@ export default function TestPage() {
     return () => window.removeEventListener("keypress", handleKeyPress);
   }, [stage, userAnswer, currentQuestion, handleSubmitAnswer]);
 
+  
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto">
