@@ -20,9 +20,6 @@ import {
 } from "recharts";
 import config from "../config";
 
-// --- KOMPONEN MODAL YANG ANDA BERIKAN ---
-// (Dengan sedikit penyesuaian impor)
-
 /**
  * Modal Component untuk Detail Hasil Test
  */
