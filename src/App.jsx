@@ -4,7 +4,7 @@ import Login from "./pages/LoginPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import TestPage from "./pages/TestPage";
-import Coba from "./pages/coba";
+// import Coba from "./pages/coba";
 
 function App() {
   return (
@@ -12,7 +12,7 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/test" element={<TestPage />} />
-      <Route path="/coba"  element={<Coba/>}/>
+      {/* <Route path="/coba"  element={<Coba/>}/> */}
 
       {/* Protected routes */}
       <Route

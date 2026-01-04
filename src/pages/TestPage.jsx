@@ -26,11 +26,14 @@ export default function TestPage() {
   const [stage, setStage] = useState("register");
   const [participantName, setParticipantName] = useState("");
   const [participantEmail, setParticipantEmail] = useState("");
+  const [participantPendidikan, setParticipantPendidikan] = useState("");
+  const [participantNoHp, setParticipantNoHp] = useState("");
   const [stream, setStream] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState({ num1: 0, num2: 0 });
   const [userAnswer, setUserAnswer] = useState("");
   const [questionNumber, setQuestionNumber] = useState(0);
   const [totalQuestions, setTotalQuestions] = useState(525);
+  const [minBenar, setMinBenar] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [startTime, setStartTime] = useState(null);
   const [questionStartTime, setQuestionStartTime] = useState(null);
@@ -102,10 +105,26 @@ export default function TestPage() {
     setQuestionStartTime(Date.now());
   }, [pairs, questionNumber, totalQuestions]);
 
+  useEffect(() => {
+    setMinBenar(Math.floor(totalQuestions*0.8));
+  }, [totalQuestions]);
+
   // Handle registration
   const handleRegister = () => {
-    if (!participantName.trim() || !participantEmail.trim()) {
-      toast.error("Nama dan email harus diisi");
+    if (!participantName.trim()) {
+      toast.error("Nama Harus Di Isi");
+      return;
+    }
+    if (!participantEmail.trim()) {
+      toast.error("Email Harus Di Isi");
+      return;
+    }
+    if (!participantPendidikan.trim()) {
+      toast.error("Mohun Masukkan Pendidikan Terakhir");
+      return;
+    }
+    if (!participantNoHp.trim()) {
+      toast.error("Mohon isi Kolom Nomor Handphone ");
       return;
     }
     if (!participantEmail.includes("@")) {
@@ -396,6 +415,32 @@ export default function TestPage() {
                   className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:border-indigo-500 focus:outline-none"
                 />
               </div>
+              <div>
+                <label className="block text-sm md:text-lg font-medium text-indigo-400 mb-2">
+                  <Mail className="w-4 h-4 inline mr-1" />
+                  Pendidikan Terakhir
+                </label>
+                <input
+                  type="text"
+                  value={participantPendidikan}
+                  onChange={(e) => setParticipantPendidikan(e.target.value)}
+                  placeholder="Masukkan Pendidikan Terakhir ( Contoh : SMK Teknik Elektronika)"
+                  className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm md:text-lg font-medium text-indigo-400 mb-2">
+                  <Mail className="w-4 h-4 inline mr-1" />
+                  Nomor Handphone Pribadi
+                </label>
+                <input
+                  type="text"
+                  value={participantNoHp}
+                  onChange={(e) => setParticipantNoHp(e.target.value)}
+                  placeholder="Masukkan Nomor Handphone Pribadi"
+                  className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                />
+              </div>
             </div>
 
             <button
@@ -424,7 +469,7 @@ export default function TestPage() {
               </p>
               <div className="bg-yellow-50/10 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-400 mb-2">
                 <strong>Persyaratan Kelulusan:</strong> Harus menjawab benar{" "}
-                <strong>525 soal</strong> untuk lulus.
+                <strong>{minBenar} soal</strong> untuk lulus.
               </div>
               <div className="bg-indigo-50/10 rounded-lg p-4 text-sm text-green-400">
                 <p>✓ Pastikan koneksi internet stabil</p>
