@@ -28,6 +28,10 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok && data.success) {
+        // Simpan token untuk fallback jika cookie gagal
+        if (data.token) {
+          localStorage.setItem('auth_token', data.token);
+        }
         toast.success("Login berhasil!");
         navigate('/admin');
       } else {

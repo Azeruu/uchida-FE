@@ -329,9 +329,13 @@ export default function AdminDashboard() {
   const fetchResults = async () => {
     setLoading(true);
     try {
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(`${config.apiUrl}/test-results`, {
-  credentials: 'include'
-});
+        credentials: 'include',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
       const data = await response.json();
 
       if (response.ok) {
@@ -347,9 +351,13 @@ export default function AdminDashboard() {
   // Fetch statistics
   const fetchStatistics = async () => {
     try {
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(`${config.apiUrl}/statistics`, {
-  credentials: 'include'
-});
+        credentials: 'include',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
       const data = await response.json();
 
       if (response.ok) {
@@ -363,8 +371,12 @@ export default function AdminDashboard() {
   // Fetch questions history
   const fetchQuestionsHistory = async () => {
     try {
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(`${config.apiUrl}/questions`, {
         credentials: "include",
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
       });
       const data = await response.json();
 
@@ -383,7 +395,12 @@ export default function AdminDashboard() {
     // load current config
     (async () => {
       try {
-        const r = await fetch(`${config.apiUrl}/config`);
+        const token = localStorage.getItem('auth_token');
+        const r = await fetch(`${config.apiUrl}/config`, {
+           headers: {
+             ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+           }
+        });
         const d = await r.json();
         if (r.ok && d.data) {
           setDurationSeconds(d.data.durationSeconds || 15 * 60);
@@ -457,10 +474,14 @@ export default function AdminDashboard() {
   const handleRegenerate = async () => {
     setSaving(true);
     try {
+      const token = localStorage.getItem('auth_token');
       const r = await fetch(`${config.apiUrl}/config`, {
         credentials: "include",
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           regenerate: true,
           durationSeconds,
@@ -483,9 +504,13 @@ export default function AdminDashboard() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      const token = localStorage.getItem('auth_token');
       const r = await fetch(`${config.apiUrl}/config`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         credentials: "include",
         body: JSON.stringify({ durationSeconds, questionCount, pairs }),
       });

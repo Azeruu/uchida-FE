@@ -63,6 +63,7 @@ export default function HomePage() {
         </div>
 
         <div className="mt-8 text-center text-sm text-gray-500">
+          <p><strong>© 2025 Reza.</strong>Made with ❤️ in Indonesia</p>
           <p><strong>Kredensial Admin:</strong> admin.kim@gmail.com / kimkantor1</p>
         </div>
       </div>

@@ -17,8 +17,12 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
     const checkAuth = async () => {
       try {
         console.log('Checking auth...');
+        const token = localStorage.getItem('auth_token');
         const response = await fetch(`${config.apiUrl}/me`, {
-          credentials: 'include' // Kirim cookies
+          credentials: 'include', // Kirim cookies
+          headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          }
         });
         console.log('Response status:', response.status); // Debug
       console.log('Response headers:', response.headers); // Debug
