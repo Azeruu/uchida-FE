@@ -212,7 +212,7 @@ export default function TestPage() {
       const totalTime = Date.now() - startTime;
       const correctCount = finalAnswers.filter((a) => a.isCorrect).length;
       const score = (correctCount / totalQuestions) * 100;
-      const isPassed = correctCount >= 525;
+      const isPassed = correctCount >= minBenar;
 
       // ✅ Hitung data untuk grafik produktivitas
       const questionsOverTimeData = calculateQuestionsOverTime(finalAnswers);
@@ -220,6 +220,8 @@ export default function TestPage() {
       const testData = {
         participantName,
         participantEmail,
+        participantPendidikan,
+        participantNoHp,
         totalQuestions,
         correctAnswers: correctCount,
         score: parseFloat(score.toFixed(2)),
@@ -264,7 +266,7 @@ export default function TestPage() {
         setIsSubmitting(false);
       }
     },
-    [participantName, participantEmail, totalQuestions, startTime, timePerQuestion]
+    [participantName, participantEmail, participantPendidikan, participantNoHp, totalQuestions, startTime, timePerQuestion]
   );
 
   // ✅ SUBMIT ANSWER - DENGAN TRACKING WAKTU
@@ -640,8 +642,8 @@ export default function TestPage() {
                     </div>
                     <div className="text-sm text-gray-600">
                       {testResult.isPassed
-                        ? "Semua benar!"
-                        : `Butuh ${totalQuestions} benar`}
+                        ? "Selamat anda lulus!"
+                        : `Butuh minimal ${totalQuestions*0.8} benar`}
                     </div>
                   </div>
                 </div>

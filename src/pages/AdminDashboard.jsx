@@ -75,10 +75,10 @@ const ResultDetailModal = ({ result, onClose }) => {
         <div className="sticky top-0 bg-gray-800 p-6 border-b border-gray-700 flex justify-between items-center z-10">
           <div>
             <h2 className="text-2xl font-bold text-white">
-              Detail Hasil Test - {result.participant_name}
+              Detail Hasil Test - {result.participantName}
             </h2>
             <p className="text-gray-400 text-sm mt-1">
-              {result.participant_email}
+              {result.participantEmail}
             </p>
           </div>
           <button
@@ -438,12 +438,8 @@ export default function AdminDashboard() {
     if (searchEmail) {
       filtered = filtered.filter(
         (result) =>
-          result.participant_email
-            .toLowerCase()
-            .includes(searchEmail.toLowerCase()) ||
-          result.participant_name
-            .toLowerCase()
-            .includes(searchEmail.toLowerCase())
+          (result.participantEmail && result.participantEmail.toLowerCase().includes(searchEmail.toLowerCase())) ||
+          (result.participantName && result.participantName.toLowerCase().includes(searchEmail.toLowerCase()))
       );
     }
 
@@ -721,13 +717,13 @@ export default function AdminDashboard() {
                             {item.id}
                           </td>
                           <td className="px-4 py-2 text-sm text-red-400">
-                            {item.total_questions}
+                            {item.totalQuestions}
                           </td>
                           <td className="px-4 py-2 text-sm text-yellow-400">
-                            {Math.floor(item.duration_seconds / 60)}
+                            {Math.floor(item.durationSeconds / 60)}
                           </td>
                           <td className="px-4 py-2 text-sm text-green-300">
-                            {new Date(item.created_at).toLocaleString("id-ID")}
+                            {new Date(item.createdAt).toLocaleString("id-ID")}
                           </td>
                         </tr>
                       ))}
@@ -829,7 +825,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Results Table */}
+        {/* Hasil Test / Results Table */}
         <div className="bg-white/10 rounded-lg shadow-md overflow-hidden">
           <div className="p-4 border-b border-gray-200">
             <h2 className="text-xl font-bold text-indigo-400">
@@ -857,6 +853,12 @@ export default function AdminDashboard() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider">
                       Email
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider">
+                      Pendidikan
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider">
+                      NO HP
+                    </th>
                     <th className="px-6 py-3 text-center text-xs font-medium text-green-300 uppercase tracking-wider">
                       Skor
                     </th>
@@ -880,12 +882,22 @@ export default function AdminDashboard() {
                     <tr key={result.id} className="hover:bg-gray-50/10">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-yellow-400">
-                          {result.participant_name}
+                          {result.participantName}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-blue-400">
-                          {result.participant_email}
+                          {result.participantEmail}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-blue-400">
+                          {result.participantPendidikan}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-blue-400">
+                          {result.participantNoHp}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -899,17 +911,17 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         <div className="text-sm text-red-300">
-                          {result.correct_answers}/{result.total_questions}
+                          {result.correctAnswers}/{result.totalQuestions}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         <div className="text-sm text-indigo-300">
-                          {result.total_time}s
+                          {result.totalTime}s
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-green-200">
-                          {formatDate(result.created_at)}
+                          {formatDate(result.createdAt)}
                         </div>
                       </td>
                       {/* TOMBOL AKSI BARU */}
