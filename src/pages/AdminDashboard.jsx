@@ -102,19 +102,19 @@ const ResultDetailModal = ({ result, onClose }) => {
             <div className="bg-white/10 rounded-lg p-4">
               <p className="text-gray-400 text-sm">Benar/Total</p>
               <p className="text-2xl font-bold text-blue-400">
-                {result.correct_answers}/{result.total_questions}
+                {result.correctAnswers}/{result.totalQuestions}
               </p>
             </div>
             <div className="bg-white/10 rounded-lg p-4">
               <p className="text-gray-400 text-sm">Total Waktu</p>
               <p className="text-2xl font-bold text-yellow-400">
-                {result.total_time}s
+                {result.totalTime}s
               </p>
             </div>
             <div className="bg-white/10 rounded-lg p-4">
               <p className="text-gray-400 text-sm">Rata-rata/Soal</p>
               <p className="text-2xl font-bold text-purple-400">
-                {(result.total_time / result.total_questions).toFixed(2)}s
+                {(result.totalTime / result.totalQuestions).toFixed(2)}s
               </p>
             </div>
           </div>
