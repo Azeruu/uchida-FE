@@ -52,15 +52,15 @@ export default function Login() {
           <div className="w-16 h-16  bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Lock className="w-8 h-8 text-indigo-600" />
           </div>
-          <h1 className="text-2xl font-bold text-indigo-400">Selamat Datang</h1>
-          <p className="text-indigo-200 text-xs mt-2">Pilih akses yang diinginkan</p>
+          <h1 className="text-2xl font-bold text-(--text1)">Selamat Datang</h1>
+          <p className="text-(--aksen1) text-xs mt-2">Pilih akses yang diinginkan</p>
         </div>
 
         {/* Guest Access Button */}
         <div className="mb-6">
           <button
             onClick={() => window.location.href = '/test'}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition mb-4"
+            className="w-full bg-(--button1) hover:bg-(--hover1) text-white font-bold py-3 rounded-lg transition mb-4"
           >
             Mulai Test sebagai Guest
           </button>
@@ -68,10 +68,10 @@ export default function Login() {
 
         {/* Admin Login Form */}
         <div className="border-t pt-3 border-indigo-300/50">
-          <h3 className="text-xl  font-semibold text-indigo-400 mb-4 text-center">Login Admin</h3>
+          <h3 className="text-xl  font-semibold text-(--aksen1) mb-4 text-center">Login Admin</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-indigo-400 mb-2">
+              <label className="block text-xs font-medium text-(--text1) mb-2">
                 <Mail className="w-4 h-4 inline mr-1" />
                 Email
               </label>
@@ -80,13 +80,13 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="example@gmail.com"
-                className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                className="w-full px-4 py-3 border-2 border-(--border1) rounded-lg focus:border-indigo-500 focus:outline-none"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-indigo-400 mb-2">
+              <label className="block text-sm font-medium text-(--text1) mb-2">
                 <Lock className="w-4 h-4 inline mr-1" />
                 Password
               </label>
@@ -96,7 +96,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="**********"
-                  className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:border-indigo-500 focus:outline-none pr-12"
+                  className="w-full px-4 py-3 border-2 border-(--border1) rounded-lg focus:border-indigo-500 focus:outline-none pr-12"
                   required
                 />
                 <button
@@ -112,7 +112,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg transition"
+              className="w-full bg-(--button1) hover:bg-(--hover1) disabled:bg-gray-400 text-white font-bold py-3 rounded-lg transition"
             >
               {loading ? 'Memproses...' : 'Login Admin'}
             </button>

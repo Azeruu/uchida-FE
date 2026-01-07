@@ -359,19 +359,19 @@ export default function TestPage() {
         <div className="flex justify-between items-center mb-4">
           <button
             onClick={() => (window.location.href = "/")}
-            className="text-green-200 w-35 border border-green-600 p-2 text-xs bg-gray-100/10 rounded-md hover:bg-indigo-400 font-medium"
+            className="text-(--text1) w-35 border border-(--border1) p-2 text-xs bg-gray-100/10 rounded-md hover:bg-(--hover1)/30 font-medium"
           >
             ← Kembali ke Menu
           </button>
           <button
             onClick={() => (window.location.href = "/admin")}
-            className="text-indigo-200 w-35 border border-indigo-600 p-2 text-xs bg-gray-100/10 rounded-md hover:bg-green-200 hover:text-gray-700 font-medium"
+            className="text-(--text2) w-35 border border-(--border2) p-2 text-xs bg-gray-100/10 rounded-md hover:bg-(--hover2)/30 font-medium"
           >
             Admin →
           </button>
         </div>
         <div className="bg-white/10 rounded-lg shadow-lg p-6 mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-center text-green-400 flex items-center justify-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-center text-foreground/60 flex items-center justify-center gap-2">
             <Calculator className="w-8 h-8" />
             Test Uchida
           </h1>
@@ -381,17 +381,17 @@ export default function TestPage() {
         {stage === "register" && (
           <div className="bg-white/10 rounded-lg shadow-lg p-8">
             <div className="mb-6 text-center">
-              <h2 className="text-2xl md:text-3xl font-bold text-indigo-400 mb-2">
+              <h2 className="text-2xl md:text-3xl font-bold text-(--text1) mb-2">
                 Registrasi Peserta
               </h2>
-              <p className="text-green-200 text-xs">
+              <p className="text-(--text2) text-xs">
                 Silakan isi data Anda terlebih dahulu
               </p>
             </div>
 
             <div className="space-y-4 mb-6">
               <div>
-                <label className="block text-sm md:text-lg font-medium text-indigo-400 mb-2">
+                <label className="block text-sm md:text-lg font-medium text-(--text1) mb-2">
                   <User className="w-4 h-4 inline mr-1" />
                   Nama Lengkap
                 </label>
@@ -400,12 +400,12 @@ export default function TestPage() {
                   value={participantName}
                   onChange={(e) => setParticipantName(e.target.value)}
                   placeholder="Masukkan nama lengkap"
-                  className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                  className="w-full px-4 py-3 border-2 border-(--border1) rounded-lg focus:border-indigo-500 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-sm md:text-lg font-medium text-indigo-400 mb-2">
+                <label className="block text-sm md:text-lg font-medium text-(--text1)  mb-2">
                   <Mail className="w-4 h-4 inline mr-1" />
                   Email
                 </label>
@@ -414,11 +414,11 @@ export default function TestPage() {
                   value={participantEmail}
                   onChange={(e) => setParticipantEmail(e.target.value)}
                   placeholder="Masukkan email"
-                  className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                  className="w-full px-4 py-3 border-2 border-(--border1) rounded-lg focus:border-indigo-500 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-sm md:text-lg font-medium text-indigo-400 mb-2">
+                <label className="block text-sm md:text-lg font-medium text-(--text1) mb-2">
                   <Mail className="w-4 h-4 inline mr-1" />
                   Pendidikan Terakhir
                 </label>
@@ -427,11 +427,11 @@ export default function TestPage() {
                   value={participantPendidikan}
                   onChange={(e) => setParticipantPendidikan(e.target.value)}
                   placeholder="Masukkan Pendidikan Terakhir ( Contoh : SMK Teknik Elektronika)"
-                  className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                  className="w-full px-4 py-3 border-2 border-(--border1) rounded-lg focus:border-indigo-500 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-sm md:text-lg font-medium text-indigo-400 mb-2">
+                <label className="block text-sm md:text-lg font-medium text-(--text1) mb-2">
                   <Mail className="w-4 h-4 inline mr-1" />
                   Nomor Handphone Pribadi
                 </label>
@@ -440,14 +440,14 @@ export default function TestPage() {
                   value={participantNoHp}
                   onChange={(e) => setParticipantNoHp(e.target.value)}
                   placeholder="Masukkan Nomor Handphone Pribadi"
-                  className="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                  className="w-full px-4 py-3 border-2 border-(--border1) rounded-lg focus:border-indigo-500 focus:outline-none"
                 />
               </div>
             </div>
 
             <button
               onClick={handleRegister}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition"
+              className="w-full bg-(--button1) hover:bg-(--hover1) text-white font-bold py-3 rounded-lg transition"
             >
               Lanjutkan
             </button>
@@ -459,21 +459,21 @@ export default function TestPage() {
           <div className="bg-white/10 rounded-lg shadow-lg p-8 text-center">
             <div className="mb-6">
               <div className="w-24 h-24 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-12 h-12 text-indigo-600" />
+                <CheckCircle className="w-12 h-12 text-(--text2)" />
               </div>
-              <h2 className="text-2xl font-bold text-indigo-400 mb-2">
+              <h2 className="text-2xl font-bold text-(--text2) mb-2">
                 Halo, {participantName}!
               </h2>
-              <p className="text-green-400 mb-4">
+              <p className="text-(--text1) mb-4">
                 Anda akan mengerjakan <strong>{totalQuestions} soal</strong>{" "}
                 penjumlahan dalam{" "}
                 <strong>{Math.floor(timeLeft / 60)} menit</strong>.
               </p>
-              <div className="bg-yellow-50/10 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-400 mb-2">
+              <div className="bg-yellow-50/10 border border-(--aksen1) rounded-lg p-3 text-sm text-(--aksen1) mb-2">
                 <strong>Persyaratan Kelulusan:</strong> Harus menjawab benar{" "}
                 <strong>{minBenar} soal</strong> untuk lulus.
               </div>
-              <div className="bg-indigo-50/10 rounded-lg p-4 text-sm text-green-400">
+              <div className="bg-indigo-50/10 rounded-lg p-4 text-sm text-(--text1)">
                 <p>✓ Pastikan koneksi internet stabil</p>
                 <p>✓ Pastikan kamera dapat diakses</p>
                 <p>✓ Kerjakan dengan jujur dan teliti</p>
@@ -481,7 +481,7 @@ export default function TestPage() {
             </div>
             <button
               onClick={handleStartCamera}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg flex items-center gap-2 mx-auto transition"
+              className="bg-(--button1) hover:bg-(--hover1) text-white font-bold py-3 px-8 rounded-lg flex items-center gap-2 mx-auto transition"
             >
               <Camera className="w-5 h-5" />
               Saya Siap
@@ -493,7 +493,7 @@ export default function TestPage() {
         {stage === "camera" && (
           <div className="bg-white/10 rounded-lg shadow-lg p-8">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-green-400 mb-4 text-center">
+              <h2 className="text-2xl font-bold text-(--text1) mb-4 text-center">
                 Kamera Aktif
               </h2>
               <div
@@ -515,7 +515,7 @@ export default function TestPage() {
             </div>
             <button
               onClick={handleStartTest}
-              className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg flex items-center gap-2 mx-auto transition"
+              className="bg-(--button1) hover:bg-(--hover1) text-white font-bold py-3 px-8 rounded-lg flex items-center gap-2 mx-auto transition"
             >
               <Play className="w-5 h-5" />
               Mulai Test
@@ -552,10 +552,10 @@ export default function TestPage() {
                   {Math.floor(timeLeft / 60)}:
                   {String(timeLeft % 60).padStart(2, "0")}
                 </div>
-                <div className="text-6xl font-bold text-indigo-400 mb-4">
+                <div className="text-6xl font-bold text-(--button1) mb-4">
                   {currentQuestion.num1} + {currentQuestion.num2}
                 </div>
-                <div className="text-2xl font-semibold text-indigo-400">
+                <div className="text-2xl font-semibold text-(--border2)">
                   = ?
                 </div>
               </div>

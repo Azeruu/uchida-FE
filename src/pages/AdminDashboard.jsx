@@ -538,13 +538,13 @@ export default function AdminDashboard() {
         <div className="flex justify-between items-center mb-4">
           <button
             onClick={() => (window.location.href = "/")}
-            className="text-green-200 w-45 border border-green-600 p-2 text-xs bg-gray-100/10 rounded-md hover:bg-indigo-400 font-medium"
+            className="text-(--text1) w-45 border border-(--border1) p-2 text-xs bg-gray-100/10 rounded-md hover:bg-(--hover1)/30 font-medium"
           >
             ← Kembali ke Menu Utama
           </button>
           <button
             onClick={() => (window.location.href = "/test")}
-            className="text-indigo-200 w-35 border border-indigo-600 p-2 text-xs bg-gray-100/10 rounded-md hover:bg-green-200 hover:text-gray-700 font-medium"
+            className="text-(--text2) w-35 border border-(--border2) p-2 text-xs bg-gray-100/10 rounded-md hover:bg-(--hover2)/30 font-medium"
           >
             Coba Test →
           </button>
@@ -552,11 +552,11 @@ export default function AdminDashboard() {
         <div className="bg-white/10 rounded-lg shadow-md p-6 mb-6">
           <div className="md:flex md:items-center md:justify-between grid grid-cols-1 gap-4 ">
             <div>
-              <h1 className="md:text-3xl text-2xl font-bold text-indigo-400 flex items-center gap-2">
-                <BarChart className="w-8 h-8 text-green-400" />
+              <h1 className="md:text-3xl text-2xl font-bold text-(--text1) flex items-center gap-2">
+                <BarChart className="w-8 h-8 text-(--aksen1)" />
                 Admin Dashboard
               </h1>
-              <p className="text-gray-200 mt-1 md:text-base text-xs">
+              <p className="text-gray-200 mt-1 md:text-(--text2) text-xs">
                 Monitor dan kelola hasil test penjumlahan
               </p>
             </div>
@@ -566,7 +566,7 @@ export default function AdminDashboard() {
                   fetchResults();
                   fetchStatistics();
                 }}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
+                className="bg-(--button1) hover:bg-(--hover1)/50 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
               >
                 <RefreshCw className="w-4 h-4" />
                 Refresh
@@ -586,7 +586,7 @@ export default function AdminDashboard() {
                       window.location.href = "/login";
                     });
                 }}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
+                className="bg-(--button2) hover:bg-(--hover2)/50 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
               >
                 Logout
               </button>
@@ -596,7 +596,7 @@ export default function AdminDashboard() {
 
         {/* Config Section */}
         <div className="bg-white/10 rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-xl font-bold text-green-300 mb-4">
+          <h2 className="text-xl font-bold text-(--text1) mb-4">
             Pengaturan Tes
           </h2>
           <div className="bg-green-100 border border-blue-200 rounded-lg p-3 mb-4">
@@ -607,7 +607,7 @@ export default function AdminDashboard() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
-              <label className="block text-sm text-green-300 mb-1">
+              <label className="block text-sm text-(--text1) mb-1">
                 Durasi (detik)
               </label>
               <input
@@ -616,12 +616,12 @@ export default function AdminDashboard() {
                 onChange={(e) =>
                   setDurationSeconds(parseInt(e.target.value || "0", 10))
                 }
-                className="w-full px-3 py-2 border border-green-300 rounded-lg"
+                className="w-full px-3 py-2 border border-(--border1) rounded-lg"
                 min={60}
               />
             </div>
             <div>
-              <label className="block text-sm text-green-300 mb-1">
+              <label className="block text-sm text-(--text1) mb-1">
                 Jumlah Soal
               </label>
               <input
@@ -630,7 +630,7 @@ export default function AdminDashboard() {
                 onChange={(e) =>
                   setQuestionCount(parseInt(e.target.value || "0", 10))
                 }
-                className="w-full px-3 py-2 border border-green-300 rounded-lg"
+                className="w-full px-3 py-2 border border-(--border1) rounded-lg"
                 min={1}
               />
             </div>
@@ -671,7 +671,7 @@ export default function AdminDashboard() {
         {/* Questions History Section */}
         <div className="bg-white/10 rounded-lg shadow-md p-6 mb-6">
           <div className="md:flex md:items-center md:justify-between grid grid-cols-1 gap-4 mb-4">
-            <h2 className="text-xl font-bold text-green-300">
+            <h2 className="text-xl font-bold text-(--text1)">
               Riwayat Konfigurasi Soal
             </h2>
             <button
@@ -685,7 +685,7 @@ export default function AdminDashboard() {
           {showHistory && (
             <div className="space-y-4">
               {questionsHistory.length === 0 ? (
-                <p className="text-green-300 text-center py-4">
+                <p className="text-(--text2) text-center py-4">
                   Belum ada riwayat konfigurasi
                 </p>
               ) : (
@@ -693,16 +693,16 @@ export default function AdminDashboard() {
                   <table className="w-full">
                     <thead className="bg-green-100/10 ">
                       <tr>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-green-300 uppercase">
+                        <th className="px-4 py-2 text-left text-xs font-medium text-(--text1) uppercase">
                           ID
                         </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-green-300 uppercase">
+                        <th className="px-4 py-2 text-left text-xs font-medium text-(--text1) uppercase">
                           Jumlah Soal
                         </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-green-300 uppercase">
+                        <th className="px-4 py-2 text-left text-xs font-medium text-(--text1) uppercase">
                           Durasi (menit)
                         </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-green-300 uppercase">
+                        <th className="px-4 py-2 text-left text-xs font-medium text-(--text1) uppercase">
                           Tanggal Dibuat
                         </th>
                       </tr>
@@ -711,9 +711,9 @@ export default function AdminDashboard() {
                       {questionsHistory.map((item, index) => (
                         <tr
                           key={item.id}
-                          className={index === 0 ? "bg-indigo-600" : ""}
+                          className={index === 0 ? "bg-indigo-400" : ""}
                         >
-                          <td className="px-4 py-2 text-sm text-green-300">
+                          <td className="px-4 py-2 text-sm text-(--text1)">
                             {item.id}
                           </td>
                           <td className="px-4 py-2 text-sm text-red-400">
@@ -722,7 +722,7 @@ export default function AdminDashboard() {
                           <td className="px-4 py-2 text-sm text-yellow-400">
                             {Math.floor(item.durationSeconds / 60)}
                           </td>
-                          <td className="px-4 py-2 text-sm text-green-300">
+                          <td className="px-4 py-2 text-sm text-green-400">
                             {new Date(item.createdAt).toLocaleString("id-ID")}
                           </td>
                         </tr>
@@ -732,7 +732,7 @@ export default function AdminDashboard() {
                 </div>
               )}
               {questionsHistory.length > 0 && (
-                <div className="text-xs text-green-300 mt-2">
+                <div className="text-xs text-green-700 mt-2">
                   * Baris ungu = konfigurasi aktif saat ini
                 </div>
               )}
@@ -746,45 +746,45 @@ export default function AdminDashboard() {
             <div className="bg-white/10 rounded-lg shadow-md p-6">
               <div className="flex items-center justify-between mb-2">
                 <Users className="w-8 h-8 text-blue-600" />
-                <span className="text-sm text-green-300">Total</span>
+                <span className="text-sm text-(--text1)">Total</span>
               </div>
-              <div className="text-3xl font-bold text-indigo-300">
+              <div className="text-3xl font-bold text-(--aksen1)">
                 {statistics.totalTests}
               </div>
-              <div className="text-sm text-indigo-400">Tests Completed</div>
+              <div className="text-sm text-(--text1)">Tests Completed</div>
             </div>
 
             <div className="bg-white/10 rounded-lg shadow-md p-6">
               <div className="flex items-center justify-between mb-2">
                 <TrendingUp className="w-8 h-8 text-green-600" />
-                <span className="text-sm text-green-300">Rata-rata</span>
+                <span className="text-sm text-(--text1)">Rata-rata</span>
               </div>
-              <div className="text-3xl font-bold text-indigo-300">
+              <div className="text-3xl font-bold text-(--aksen1)">
                 {statistics.averageScore}%
               </div>
-              <div className="text-sm text-indigo-400">Average Score</div>
+              <div className="text-sm text-(--text1)">Average Score</div>
             </div>
 
             <div className="bg-white/10 rounded-lg shadow-md p-6">
               <div className="flex items-center justify-between mb-2">
                 <Clock className="w-8 h-8 text-purple-600" />
-                <span className="text-sm text-green-300">Rata-rata</span>
+                <span className="text-sm text-(--text1)">Rata-rata</span>
               </div>
-              <div className="text-3xl font-bold text-indigo-300">
+              <div className="text-3xl font-bold text-(--aksen1)">
                 {statistics.averageTime}s
               </div>
-              <div className="text-sm text-indigo-400">Average Time</div>
+              <div className="text-sm text-(--text1)">Average Time</div>
             </div>
 
             <div className="bg-white/10 rounded-lg shadow-md p-6">
               <div className="flex items-center justify-between mb-2">
                 <BarChart className="w-8 h-8 text-orange-600" />
-                <span className="text-sm text-green-300">Tertinggi</span>
+                <span className="text-sm text-(--text1)">Tertinggi</span>
               </div>
-              <div className="text-3xl font-bold text-indigo-300">
+              <div className="text-3xl font-bold text-(--aksen1)">
                 {statistics.highestScore}%
               </div>
-              <div className="text-sm text-indigo-400">Highest Score</div>
+              <div className="text-sm text-(--text1)">Highest Score</div>
             </div>
           </div>
         )}
@@ -828,7 +828,7 @@ export default function AdminDashboard() {
         {/* Hasil Test / Results Table */}
         <div className="bg-white/10 rounded-lg shadow-md overflow-hidden">
           <div className="p-4 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-indigo-400">
+            <h2 className="text-xl font-bold text-(--text1)">
               Hasil Test ({filteredResults.length})
             </h2>
           </div>
@@ -845,34 +845,34 @@ export default function AdminDashboard() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-white/10">
+                <thead className="bg-white/30">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-(--aksen1) uppercase tracking-wider">
                       Peserta
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-(--aksen1) uppercase tracking-wider">
                       Email
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-(--aksen1) uppercase tracking-wider">
                       Pendidikan
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-(--aksen1) uppercase tracking-wider">
                       NO HP
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-green-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-center text-xs font-medium text-(--aksen1) uppercase tracking-wider">
                       Skor
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-green-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-center text-xs font-medium text-(--aksen1) uppercase tracking-wider">
                       Benar/Total
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-green-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-center text-xs font-medium text-(--aksen1) uppercase tracking-wider">
                       Waktu
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-(--aksen1) uppercase tracking-wider">
                       Tanggal
                     </th>
                     {/* KOLOM AKSI BARU */}
-                    <th className="px-6 py-3 text-center text-xs font-medium text-green-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-center text-xs font-medium text-(--aksen1) uppercase tracking-wider">
                       Aksi
                     </th>
                   </tr>
@@ -881,7 +881,7 @@ export default function AdminDashboard() {
                   {filteredResults.map((result) => (
                     <tr key={result.id} className="hover:bg-gray-50/10">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-yellow-400">
+                        <div className="text-sm font-medium text-yellow-500">
                           {result.participantName}
                         </div>
                       </td>
@@ -910,17 +910,17 @@ export default function AdminDashboard() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <div className="text-sm text-red-300">
+                        <div className="text-sm text-red-500">
                           {result.correctAnswers}/{result.totalQuestions}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <div className="text-sm text-indigo-300">
+                        <div className="text-sm text-indigo-400">
                           {result.totalTime}s
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-green-200">
+                        <div className="text-sm text-green-600">
                           {formatDate(result.createdAt)}
                         </div>
                       </td>

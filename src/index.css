@@ -43,8 +43,16 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  --background: oklch(92.405% 0.05215 85.097);
   --foreground: oklch(0.145 0 0);
+  --border1: oklch(66.252% 0.1691 254.088);
+  --border2: oklch(65.661% 0.15289 28.631);
+  --text1: oklch(53.051% 0.24887 262.523);
+  --text2: oklch(57.114% 0.19203 25.709);
+  --button1: oklch(42.125% 0.21963 263.331);
+  --button2: oklch(54.754% 0.2119 27.997);
+  --hover1: oklch(33.604% 0.14163 261.068);
+  --hover2: oklch(35.335% 0.12955 27.023);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -74,11 +82,19 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --aksen1:oklch(39.8% 0.195 277.366)
+  --aksen1: oklch(64.681% 0.18268 146.496);
 }
 
 .dark {
   --background: #1b2253;
+  --border1: oklch(93.545% 0.09548 170.941);
+  --border2: oklch(83.103% 0.09982 309.38);
+  --text1: oklch(86.482% 0.19238 160.893);
+  --text2: oklch(69.665% 0.17963 307.777);
+  --button1: oklch(70.556% 0.2397 142.445);
+  --button2: oklch(49.409% 0.23994 302.547);
+  --hover1: oklch(51.436% 0.1737 142.445);
+  --hover2: oklch(32.325% 0.15011 303.527);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -109,7 +125,7 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
-  --aksen1:oklch(39.8% 0.195 277.366)
+  --aksen1: oklch(77.78% 0.14835 100.075);
 }
 
 @layer base {
