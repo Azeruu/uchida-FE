@@ -40,6 +40,7 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
         if (response.ok && data.success && data.user?.role === 'admin') {
           setIsAuthenticated(true);
         } else {
+          localStorage.removeItem('auth_token');
           setIsAuthenticated(false);
         }
       } catch (error) {
