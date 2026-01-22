@@ -18,7 +18,7 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
       try {
         console.log('Checking auth...');
         const token = localStorage.getItem('auth_token');
-        const response = await fetch(`${config.apiUrl}/me`, {
+        let response = await fetch(`${config.apiUrl}/me`, {
           headers: {
             ...(token ? { 'Authorization': `Bearer ${token}` } : {})
           }
@@ -26,9 +26,16 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
         console.log('Response status:', response.status); // Debug
       console.log('Response headers:', response.headers); // Debug
       
-        const data = await response.json();
+        let data = await response.json();
         console.log('Response data:', data); // Debug
       
+        // Fallback: jika 401 dan ada token, coba kirim via query ?token=
+        if (response.status === 401 && token) {
+          response = await fetch(`${config.apiUrl}/me?token=${encodeURIComponent(token)}`);
+          data = await response.json();
+          console.log('Fallback /me via query param:', data);
+        }
+        
         
         if (response.ok && data.success && data.user?.role === 'admin') {
           setIsAuthenticated(true);
