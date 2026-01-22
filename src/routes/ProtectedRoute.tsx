@@ -14,12 +14,10 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log("🔍 Checking authentication...");
         console.log("🌐 Current hostname:", window.location.hostname);
-        console.log("🔧 API URL from config:", config.apiUrl); // PENTING!
+        console.log("🔧 API URL from config:", config.apiUrl);
         console.log("🔍 Checking authentication...");
 
-        // Ambil token dari localStorage
         const token = localStorage.getItem("auth_token");
 
         if (!token) {
@@ -31,7 +29,6 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
 
         console.log("✅ Token found:", token.substring(0, 20) + "...");
 
-        // Kirim request dengan Bearer token
         const apiUrl = `${config.apiUrl}/me`;
         console.log("📡 Calling API:", apiUrl);
 
@@ -56,23 +53,30 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
           } else {
             console.log("❌ User not admin or invalid response");
             setIsAuthenticated(false);
-            // Clear invalid token
+            // HANYA hapus token jika response OK tapi data invalid
             localStorage.removeItem("auth_token");
             localStorage.removeItem("user");
           }
         } else {
           console.log("❌ Response not OK:", response.status);
+
+          // Jika 401, kemungkinan token expired atau invalid
+          if (response.status === 401) {
+            console.log("⚠️ Token might be expired or invalid");
+            // JANGAN langsung hapus, beri kesempatan user untuk re-login
+          }
+
           setIsAuthenticated(false);
-          // Clear invalid token
-          localStorage.removeItem("auth_token");
-          localStorage.removeItem("user");
+          // JANGAN hapus token di sini! Biarkan user coba login lagi
+          // localStorage.removeItem('auth_token'); // ← KOMEN INI
+          // localStorage.removeItem('user');
         }
       } catch (error) {
         console.error("❌ Auth check failed:", error);
         setIsAuthenticated(false);
-        // Clear tokens on error
-        localStorage.removeItem("auth_token");
-        localStorage.removeItem("user");
+        // JANGAN hapus token saat network error
+        // localStorage.removeItem('auth_token'); // ← KOMEN INI
+        // localStorage.removeItem('user');
       } finally {
         setLoading(false);
       }
@@ -81,7 +85,6 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
     checkAuth();
   }, []);
 
-  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -93,7 +96,6 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
     );
   }
 
-  // Redirect jika tidak terautentikasi
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
