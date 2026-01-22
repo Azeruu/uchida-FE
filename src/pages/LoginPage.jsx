@@ -11,46 +11,75 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const response = await fetch(`${config.apiUrl}/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // Tetap kirim cookie sebagai backup
-        body: JSON.stringify({ email, password }),
-      });
+  try {
+    console.log("🔄 Sending login request to:", `${config.apiUrl}/login`);
+    console.log("📤 Request body:", { email, password });
 
-      const data = await response.json();
+    const response = await fetch(`${config.apiUrl}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ email, password }),
+    });
 
-      if (response.ok && data.success) {
-        // Simpan token di localStorage
-        if (data.token) {
-          localStorage.setItem("auth_token", data.token);
-          console.log("✅ Token saved to localStorage");
-        }
+    console.log("📡 Response status:", response.status);
+    console.log(
+      "📡 Response headers:",
+      Object.fromEntries(response.headers.entries()),
+    );
 
-        // Simpan user info (opsional, untuk UI)
-        if (data.user) {
-          localStorage.setItem("user", JSON.stringify(data.user));
-        }
+    const data = await response.json();
+    console.log("📦 Response data:", data);
 
-        toast.success("Login berhasil!");
-        navigate("/admin");
+    if (response.ok && data.success) {
+      console.log("✅ Login successful");
+
+      // CRITICAL: Cek apakah token ada di response
+      if (data.token) {
+        console.log(
+          "💾 Saving token to localStorage:",
+          data.token.substring(0, 20) + "...",
+        );
+        localStorage.setItem("auth_token", data.token);
+
+        // Verify token tersimpan
+        const savedToken = localStorage.getItem("auth_token");
+        console.log(
+          "✔️ Token verified in localStorage:",
+          savedToken ? "YES" : "NO",
+        );
       } else {
-        toast.error(data.message || "Login gagal");
+        console.error("❌ NO TOKEN in response data!");
       }
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Terjadi kesalahan saat login");
-    } finally {
-      setLoading(false);
+
+      if (data.user) {
+        console.log("💾 Saving user to localStorage:", data.user);
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+
+      toast.success("Login berhasil!");
+
+      // Delay sedikit sebelum navigate untuk memastikan localStorage tersimpan
+      setTimeout(() => {
+        navigate("/admin");
+      }, 100);
+    } else {
+      console.error("❌ Login failed:", data.message);
+      toast.error(data.message || "Login gagal");
     }
-  };
+  } catch (error) {
+    console.error("💥 Login error:", error);
+    toast.error("Terjadi kesalahan saat login");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
