@@ -7,6 +7,7 @@ import {
   RefreshCw,
   X, // Ditambahkan untuk Modal
   Eye, // Ditambahkan untuk tombol Aksi
+  Trash2, // Ditambahkan untuk tombol Hapus
 } from "lucide-react";
 import {
   LineChart,
@@ -20,53 +21,92 @@ import {
 } from "recharts";
 import config from "../config";
 
+// Format waktu dalam menit dan detik (helper function)
+const formatTimeMinutesSeconds = (seconds) => {
+  const minutes = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  if (minutes === 0) {
+    return `${secs} detik`;
+  }
+  if (secs === 0) {
+    return `${minutes} menit`;
+  }
+  return `${minutes} menit ${secs} detik`;
+};
+
+// Helper untuk menghitung statistik & kelulusan (Konsisten dengan TestPage)
+const calculateTestStats = (answers, totalTimeSeconds, maxIncorrect = 7, minQuestions = 35) => {
+  if (!answers || !Array.isArray(answers)) return { questionsOverTime: [], isPassed: false };
+  
+  const questionsOverTime = [];
+  let currentMinute = 0;
+  let questionsInMinute = 0;
+  
+  // Hitung produktivitas per menit berdasarkan urutan pengerjaan
+  answers.forEach((answer, index) => {
+    // Hitung waktu kumulatif sampai soal ini
+    // Kita gunakan reduce dari awal karena kita butuh waktu kumulatif absolut
+    const totalTimeForQuestion = answers
+      .slice(0, index + 1)
+      .reduce((sum, a) => sum + (a.timeSpent || 0), 0);
+      
+    const minute = Math.floor(totalTimeForQuestion / 60000); // convert ms to minutes
+    
+    if (minute === currentMinute) {
+      questionsInMinute++;
+    } else {
+      if (questionsInMinute > 0) {
+        questionsOverTime.push({
+          menit: currentMinute + 1,
+          jumlahSoal: questionsInMinute
+        });
+      }
+      currentMinute = minute;
+      questionsInMinute = 1; // Mulai hitung untuk menit baru
+    }
+  });
+  
+  // Add last minute
+  if (questionsInMinute > 0) {
+    questionsOverTime.push({
+      menit: currentMinute + 1,
+      jumlahSoal: questionsInMinute
+    });
+  }
+
+  // Hitung Kelulusan (Logika Baru: Ignore Partial Minutes)
+  // Total time di DB dalam detik, konversi ke menit penuh
+  const fullMinutes = Math.floor((totalTimeSeconds || 0) / 60);
+  
+  const validMinutesData = questionsOverTime.filter(item => item.menit <= fullMinutes);
+  
+  // Cek Speed
+  const isSpeedPassed = validMinutesData.length > 0 
+    ? validMinutesData.every(item => item.jumlahSoal >= minQuestions)
+    : true; 
+
+  // Cek Accuracy
+  const correctCount = answers.filter(a => a.isCorrect).length;
+  const incorrectCount = answers.length - correctCount;
+  const isAccuracyPassed = incorrectCount <= maxIncorrect;
+    
+  return { questionsOverTime, isPassed: isSpeedPassed && isAccuracyPassed };
+};
+
 /**
  * Modal Component untuk Detail Hasil Test
  */
-const ResultDetailModal = ({ result, onClose }) => {
+const ResultDetailModal = ({ result, onClose, maxIncorrectAnswers, minQuestionsPerMinute }) => {
   if (!result) return null;
 
-  // Kalkulasi data grafik dari answers
-  const calculateGraphData = () => {
-    if (!result.answers || !Array.isArray(result.answers)) {
-      return { timePerQuestion: [], questionsOverTime: [] };
-    }
+  // Gunakan helper calculateTestStats
+  const { questionsOverTime } = calculateTestStats(result.answers, result.totalTime || result.total_time, maxIncorrectAnswers, minQuestionsPerMinute);
 
-    // Grafik 1: Waktu per soal
-    const timePerQuestion = result.answers.map((ans, idx) => ({
-      soal: idx + 1,
-      waktu: Math.round((ans.timeSpent || 0) / 1000), // Convert ms to seconds
-    }));
-
-    // Grafik 2: Produktivitas per menit
-    const questionsOverTime = [];
-    // Membuat salinan array sebelum di-sort
-    const sortedAnswers = [...result.answers].sort(
-      (a, b) => (a.timeSpent || 0) - (b.timeSpent || 0)
-    );
-
-    if (sortedAnswers.length > 0) {
-      const questionsByMinute = {};
-      let cumulativeTime = 0;
-
-      sortedAnswers.forEach((ans) => {
-        cumulativeTime += ans.timeSpent || 0;
-        const minute = Math.floor(cumulativeTime / 60000) + 1;
-        questionsByMinute[minute] = (questionsByMinute[minute] || 0) + 1;
-      });
-
-      Object.keys(questionsByMinute).forEach((min) => {
-        questionsOverTime.push({
-          menit: parseInt(min),
-          jumlahSoal: questionsByMinute[min],
-        });
-      });
-    }
-
-    return { timePerQuestion, questionsOverTime };
-  };
-
-  const { timePerQuestion, questionsOverTime } = calculateGraphData();
+  // Grafik 1: Waktu per soal (sederhana mapping)
+  const timePerQuestion = (result.answers || []).map((ans, idx) => ({
+    soal: idx + 1,
+    waktu: Math.round((ans.timeSpent || 0) / 1000),
+  }));
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -102,19 +142,19 @@ const ResultDetailModal = ({ result, onClose }) => {
             <div className="bg-white/10 rounded-lg p-4">
               <p className="text-gray-400 text-sm">Benar/Total</p>
               <p className="text-2xl font-bold text-blue-400">
-                {result.correctAnswers}/{result.totalQuestions}
+                {result.correctAnswers || result.correct_answers}/{result.totalQuestions || result.total_questions}
               </p>
             </div>
             <div className="bg-white/10 rounded-lg p-4">
               <p className="text-gray-400 text-sm">Total Waktu</p>
               <p className="text-2xl font-bold text-yellow-400">
-                {result.totalTime}s
+                {formatTimeMinutesSeconds(result.totalTime || result.total_time)}
               </p>
             </div>
             <div className="bg-white/10 rounded-lg p-4">
               <p className="text-gray-400 text-sm">Rata-rata/Soal</p>
               <p className="text-2xl font-bold text-purple-400">
-                {(result.totalTime / result.totalQuestions).toFixed(2)}s
+                {((result.totalTime || result.total_time) / (result.totalQuestions || result.total_questions)).toFixed(2)}s
               </p>
             </div>
           </div>
@@ -167,7 +207,7 @@ const ResultDetailModal = ({ result, onClose }) => {
               </ResponsiveContainer>
               <p className="text-sm text-gray-400 mt-4 text-center">
                 Rata-rata waktu:{" "}
-                {(result.total_time / result.total_questions).toFixed(2)}{" "}
+                {((result.totalTime || result.total_time) / (result.totalQuestions || result.total_questions)).toFixed(2)}{" "}
                 detik/soal
               </p>
             </div>
@@ -199,7 +239,7 @@ const ResultDetailModal = ({ result, onClose }) => {
                   <YAxis
                     stroke="#999"
                     label={{
-                      value: "Jumlah Soal",
+                      value: "Jumlah Soal yang Dijawab",
                       angle: -90,
                       position: "insideLeft",
                       fill: "#999",
@@ -224,7 +264,7 @@ const ResultDetailModal = ({ result, onClose }) => {
                 </LineChart>
               </ResponsiveContainer>
               <p className="text-sm text-gray-400 mt-4 text-center">
-                Total waktu test: {Math.ceil(result.total_time / 60)} menit
+                Total waktu test: {Math.ceil((result.totalTime || result.total_time) / 60)} menit
               </p>
             </div>
           ) : (
@@ -317,6 +357,8 @@ export default function AdminDashboard() {
   const [searchEmail, setSearchEmail] = useState("");
   const [durationSeconds, setDurationSeconds] = useState(15 * 60);
   const [questionCount, setQuestionCount] = useState(525);
+  const [maxIncorrectAnswers, setMaxIncorrectAnswers] = useState(7);
+  const [minQuestionsPerMinute, setMinQuestionsPerMinute] = useState(35);
   const [pairs, setPairs] = useState([]);
   const [saving, setSaving] = useState(false);
   const [questionsHistory, setQuestionsHistory] = useState([]);
@@ -324,6 +366,7 @@ export default function AdminDashboard() {
   
   // --- STATE BARU UNTUK MODAL ---
   const [selectedResult, setSelectedResult] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   // Fetch all results
   const fetchResults = async () => {
@@ -405,6 +448,8 @@ export default function AdminDashboard() {
         if (r.ok && d.data) {
           setDurationSeconds(d.data.durationSeconds || 15 * 60);
           setQuestionCount(d.data.questionCount || 525);
+          setMaxIncorrectAnswers(d.data.maxIncorrectAnswers ?? 7);
+          setMinQuestionsPerMinute(d.data.minQuestionsPerMinute ?? 35);
           setPairs(Array.isArray(d.data.pairs) ? d.data.pairs : []);
         }
       } catch (e) {
@@ -460,6 +505,7 @@ export default function AdminDashboard() {
     });
   };
 
+
   // Get score color
   const getScoreColor = (score) => {
     if (score >= 80) return "text-green-600 bg-green-100";
@@ -482,6 +528,8 @@ export default function AdminDashboard() {
           regenerate: true,
           durationSeconds,
           questionCount,
+          maxIncorrectAnswers,
+          minQuestionsPerMinute,
         }),
       });
       const d = await r.json();
@@ -489,6 +537,8 @@ export default function AdminDashboard() {
         setPairs(d.data.pairs);
         setDurationSeconds(d.data.durationSeconds);
         setQuestionCount(d.data.questionCount);
+        setMaxIncorrectAnswers(d.data.maxIncorrectAnswers);
+        setMinQuestionsPerMinute(d.data.minQuestionsPerMinute);
       }
     } catch (e) {
       console.error("Failed to regenerate", e);
@@ -508,13 +558,15 @@ export default function AdminDashboard() {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         credentials: "include",
-        body: JSON.stringify({ durationSeconds, questionCount, pairs }),
+        body: JSON.stringify({ durationSeconds, questionCount, maxIncorrectAnswers, minQuestionsPerMinute, pairs }),
       });
       const data = await r.json();
       if (r.ok && data.data) {
         setPairs(data.data.pairs);
         setQuestionCount(data.data.questionCount);
         setDurationSeconds(data.data.durationSeconds);
+        setMaxIncorrectAnswers(data.data.maxIncorrectAnswers);
+        setMinQuestionsPerMinute(data.data.minQuestionsPerMinute);
         // Refresh questions history
         fetchQuestionsHistory();
         alert("Konfigurasi berhasil disimpan ke database!");
@@ -528,6 +580,41 @@ export default function AdminDashboard() {
       alert("Gagal menyimpan konfigurasi");
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Handle delete test result
+  const handleDelete = async (id) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus hasil test ini?")) {
+      return;
+    }
+
+    setDeletingId(id);
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${config.apiUrl}/test-results/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Refresh results
+        fetchResults();
+        fetchStatistics();
+        alert("Hasil test berhasil dihapus!");
+      } else {
+        alert("Gagal menghapus hasil test: " + (data.error || data.message || "Unknown error"));
+      }
+    } catch (error) {
+      console.error("Error deleting test result:", error);
+      alert("Gagal menghapus hasil test");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -550,17 +637,17 @@ export default function AdminDashboard() {
           </button>
         </div>
         <div className="bg-white/10 rounded-lg shadow-md p-6 mb-6">
-          <div className="md:flex md:items-center md:justify-between grid grid-cols-1 gap-4 ">
-            <div>
+          <div className="md:flex md:items-center md:justify-between grid grid-cols-1 gap-4">
+            <div className="flex flex-col justify-center items-center">
               <h1 className="md:text-3xl text-2xl font-bold text-(--text1) flex items-center gap-2">
                 <BarChart className="w-8 h-8 text-(--aksen1)" />
                 Admin Dashboard
               </h1>
-              <p className="text-gray-200 mt-1 md:text-(--text2) text-xs">
+              <p className="text-gray-200 md:pl-6 mt-1 md:text-(--text2) text-xs">
                 Monitor dan kelola hasil test penjumlahan
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-row justify-center items-center">
               <button
                 onClick={() => {
                   fetchResults();
@@ -608,17 +695,19 @@ export default function AdminDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
               <label className="block text-sm text-(--text1) mb-1">
-                Durasi (detik)
+                Durasi (menit)
               </label>
               <input
                 type="number"
-                value={durationSeconds}
-                onChange={(e) =>
-                  setDurationSeconds(parseInt(e.target.value || "0", 10))
-                }
-                className="w-full px-3 py-2 border border-(--border1) rounded-lg"
-                min={60}
+                value={Math.floor(durationSeconds / 60)}
+                onChange={(e) => {
+                  const minutes = parseInt(e.target.value || "0", 10);
+                  setDurationSeconds(minutes * 60);
+                }}
+                className="w-full px-3 py-2 border border-(--border1) rounded-lg bg-white/10"
+                min={1}
               />
+              <p className="text-xs text-gray-400 mt-1">Durasi Pengerjaan</p>
             </div>
             <div>
               <label className="block text-sm text-(--text1) mb-1">
@@ -630,28 +719,63 @@ export default function AdminDashboard() {
                 onChange={(e) =>
                   setQuestionCount(parseInt(e.target.value || "0", 10))
                 }
-                className="w-full px-3 py-2 border border-(--border1) rounded-lg"
+                className="w-full px-3 py-2 border border-(--border1) rounded-lg bg-white/10"
                 min={1}
               />
+              <p className="text-xs text-gray-400 mt-1">
+                Jumlah soal keseluruhan
+              </p>
             </div>
-            <div className="flex gap-2">
+            <div>
+              <label className="block text-sm font-medium text-(--text1) mb-1">
+                Maksimal Jawaban Salah
+              </label>
+              <input
+                type="number"
+                value={maxIncorrectAnswers}
+                onChange={(e) => setMaxIncorrectAnswers(Number(e.target.value))}
+                className="w-full px-4 py-2 border border-(--border1) rounded-lg focus:outline-none focus:border-(--aksen1) bg-white/10 text-white"
+                min="0"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Batas toleransi kesalahan
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-(--text1) mb-1">
+                Min. Soal Benar/Menit
+              </label>
+              <input
+                type="number"
+                value={minQuestionsPerMinute}
+                onChange={(e) =>
+                  setMinQuestionsPerMinute(Number(e.target.value))
+                }
+                className="w-full px-4 py-2 border border-(--border1) rounded-lg focus:outline-none focus:border-(--aksen1) bg-white/10 text-white"
+                min="1"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Target kecepatan pengerjaan
+              </p>
+            </div>
+            <div className="flex items-end gap-2">
               <button
                 onClick={handleRegenerate}
-                className="bg-yellow-200 hover:bg-yellow-300 text-gray-800 px-4 py-2 rounded-lg"
+                className="bg-yellow-200 hover:bg-yellow-300 text-gray-800 px-4 py-2 rounded-lg w-25 h-15"
                 disabled={saving}
               >
                 {saving ? "Menggenerate..." : "Generate Soal"}
               </button>
               <button
                 onClick={handleSave}
-                className="bg-green-400 hover:bg-green-500 text-gray-800 px-4 py-2 rounded-lg"
+                className="bg-green-400 hover:bg-green-500 text-gray-800 px-4 py-2 rounded-lg w-25 h-15"
                 disabled={saving}
               >
                 {saving ? "Menyimpan..." : "Simpan"}
               </button>
               <button
                 onClick={() => window.open("/test", "_blank")}
-                className="bg-indigo-400 hover:bg-indigo-500 text-gray-800 px-4 py-2 rounded-lg"
+                className="bg-indigo-400 hover:bg-indigo-500 text-gray-800 px-4 py-2 rounded-lg w-25 h-15"
               >
                 Preview Test
               </button>
@@ -770,8 +894,8 @@ export default function AdminDashboard() {
                 <Clock className="w-8 h-8 text-purple-600" />
                 <span className="text-sm text-(--text1)">Rata-rata</span>
               </div>
-              <div className="text-3xl font-bold text-(--aksen1)">
-                {statistics.averageTime}s
+              <div className="text-2xl font-bold text-(--aksen1)">
+                {formatTimeMinutesSeconds(statistics.averageTime)}
               </div>
               <div className="text-sm text-(--text1)">Average Time</div>
             </div>
@@ -868,6 +992,9 @@ export default function AdminDashboard() {
                     <th className="px-6 py-3 text-center text-xs font-medium text-(--aksen1) uppercase tracking-wider">
                       Waktu
                     </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-(--aksen1) uppercase tracking-wider">
+                      Kelulusan
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-(--aksen1) uppercase tracking-wider">
                       Tanggal
                     </th>
@@ -878,64 +1005,101 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="bg-white/10 divide-y divide-green-300">
-                  {filteredResults.map((result) => (
-                    <tr key={result.id} className="hover:bg-gray-50/10">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-yellow-500">
-                          {result.participantName}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-blue-400">
-                          {result.participantEmail}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-blue-400">
-                          {result.participantPendidikan}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-blue-400">
-                          {result.participantNoHp}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <span
-                          className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getScoreColor(
-                            result.score
-                          )}`}
-                        >
-                          {result.score}%
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <div className="text-sm text-red-500">
-                          {result.correctAnswers}/{result.totalQuestions}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <div className="text-sm text-indigo-400">
-                          {result.totalTime}s
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-green-600">
-                          {formatDate(result.createdAt)}
-                        </div>
-                      </td>
-                      {/* TOMBOL AKSI BARU */}
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <button
-                          onClick={() => setSelectedResult(result)}
-                          className="text-indigo-400 hover:text-indigo-200"
-                          title="Lihat Detail"
-                        >
-                          <Eye className="w-5 h-5" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredResults.map((result) => {
+                    // Hitung status kelulusan jika di DB null/false (untuk support data lama)
+                    // Prioritaskan result.isPassed dari DB jika ada (dan true), jika false kita double check
+                    // Sebenarnya jika DB bilang false, harusnya false. Tapi karena data lama defaultnya false (padahal mungkin lulus), kita cek ulang.
+                    // Logika aman: Jika DB true -> true. Jika DB false/null -> hitung manual.
+                    const stats = calculateTestStats(
+                      result.answers,
+                      result.totalTime || result.total_time,
+                      maxIncorrectAnswers,
+                      minQuestionsPerMinute
+                    );
+                    const isPassed = result.isPassed || stats.isPassed;
+
+                    return (
+                      <tr key={result.id} className="hover:bg-gray-50/10">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-yellow-500">
+                            {result.participantName}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-blue-400">
+                            {result.participantEmail}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-blue-400">
+                            {result.participantPendidikan}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-blue-400">
+                            {result.participantNoHp}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <span
+                            className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getScoreColor(
+                              result.score
+                            )}`}
+                          >
+                            {result.score}%
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <div className="text-sm text-red-500">
+                            {result.correctAnswers}/{result.totalQuestions}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <div className="text-sm text-indigo-400">
+                            {formatTimeMinutesSeconds(
+                              result.totalTime || result.total_time
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <span
+                            className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
+                              isPassed
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {isPassed ? "LULUS" : "TIDAK LULUS"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-green-600">
+                            {formatDate(result.createdAt)}
+                          </div>
+                        </td>
+                        {/* TOMBOL AKSI BARU */}
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <div className="flex items-center justify-center gap-3">
+                            <button
+                              onClick={() => setSelectedResult(result)}
+                              className="text-indigo-400 hover:text-indigo-200 transition"
+                              title="Lihat Detail"
+                            >
+                              <Eye className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(result.id)}
+                              disabled={deletingId === result.id}
+                              className="text-red-400 hover:text-red-200 transition disabled:opacity-50"
+                              title="Hapus"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -954,6 +1118,8 @@ export default function AdminDashboard() {
       <ResultDetailModal
         result={selectedResult}
         onClose={() => setSelectedResult(null)}
+        maxIncorrectAnswers={maxIncorrectAnswers}
+        minQuestionsPerMinute={minQuestionsPerMinute}
       />
     </div>
   );

@@ -33,7 +33,6 @@ export default function TestPage() {
   const [userAnswer, setUserAnswer] = useState("");
   const [questionNumber, setQuestionNumber] = useState(0);
   const [totalQuestions, setTotalQuestions] = useState(525);
-  const [minBenar, setMinBenar] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [startTime, setStartTime] = useState(null);
   const [questionStartTime, setQuestionStartTime] = useState(null);
@@ -42,6 +41,8 @@ export default function TestPage() {
   const [error, setError] = useState("");
   const [timeLeft, setTimeLeft] = useState(TEST_DURATION);
   const [pairs, setPairs] = useState([]);
+  const [maxIncorrectAnswers, setMaxIncorrectAnswers] = useState(7);
+  const [minQuestionsPerMinute, setMinQuestionsPerMinute] = useState(35);
   
   // ✅ STATE BARU UNTUK GRAFIK
   const [timePerQuestion, setTimePerQuestion] = useState([]);
@@ -60,9 +61,13 @@ export default function TestPage() {
         const sanitizedPairs = Array.isArray(cfg.pairs) ? cfg.pairs : [];
         setPairs(sanitizedPairs);
         setTotalQuestions(cfg.questionCount || 525);
+        setMaxIncorrectAnswers(cfg.maxIncorrectAnswers ?? 7);
+        setMinQuestionsPerMinute(cfg.minQuestionsPerMinute ?? 35);
         console.log("Loaded config:", {
           questionCount: cfg.questionCount,
           durationSeconds: cfg.durationSeconds,
+          maxIncorrectAnswers: cfg.maxIncorrectAnswers,
+          minQuestionsPerMinute: cfg.minQuestionsPerMinute,
           pairsLength: sanitizedPairs.length,
         });
       }
@@ -77,14 +82,6 @@ export default function TestPage() {
     loadConfig();
   }, []);
 
-  // Format time MM:SS
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  };
   
   // Generate next question from configured pairs
   const generateQuestion = useCallback(() => {
@@ -105,9 +102,6 @@ export default function TestPage() {
     setQuestionStartTime(Date.now());
   }, [pairs, questionNumber, totalQuestions]);
 
-  useEffect(() => {
-    setMinBenar(Math.floor(totalQuestions*0.8));
-  }, [totalQuestions]);
 
   // Handle registration
   const handleRegister = () => {
@@ -170,6 +164,7 @@ export default function TestPage() {
   };
 
   // ✅ FUNGSI UNTUK MENGHITUNG PRODUKTIVITAS PER MENIT
+  // Struktur data: { menit: X, jumlahSoal: Y } - Menit di sumbu X, Jumlah Soal di sumbu Y
   const calculateQuestionsOverTime = (finalAnswers) => {
     const result = [];
     let currentMinute = 0;
@@ -211,11 +206,31 @@ export default function TestPage() {
     async (finalAnswers) => {
       const totalTime = Date.now() - startTime;
       const correctCount = finalAnswers.filter((a) => a.isCorrect).length;
+      const incorrectCount = finalAnswers.length - correctCount;
       const score = (correctCount / totalQuestions) * 100;
-      const isPassed = correctCount >= minBenar;
-
-      // ✅ Hitung data untuk grafik produktivitas
+      
+      // ✅ LOGIKA KELULUSAN BARU:
+      // 1. Minimal X penjumlahan per menit (configurable, default 35) - hanya hitung menit penuh
+      // 2. Maksimal Y jawaban salah (configurable, default 7)
+      
       const questionsOverTimeData = calculateQuestionsOverTime(finalAnswers);
+      
+      const fullMinutes = Math.floor(totalTime / 60000);
+      
+      // Filter hanya menit yang penuh. Jika waktu 2 menit 45 detik, fullMinutes = 2. Kita abaikan menit ke-3.
+      const validMinutesData = questionsOverTimeData.filter(item => item.menit <= fullMinutes);
+
+      // Cek apakah setiap menit penuh minimal minQuestionsPerMinute soal
+      // Jika test kurang dari 1 menit (fullMinutes = 0), kita anggap memenuhi syarat speed (true)
+      const isSpeedPassed = validMinutesData.length > 0 
+        ? validMinutesData.every(item => item.jumlahSoal >= minQuestionsPerMinute)
+        : true;
+
+      // Cek apakah jumlah salah tidak melebihi batas
+      const isAccuracyPassed = incorrectCount <= maxIncorrectAnswers;
+
+      const isPassed = isSpeedPassed && isAccuracyPassed;
+
 
       const testData = {
         participantName,
@@ -266,7 +281,7 @@ export default function TestPage() {
         setIsSubmitting(false);
       }
     },
-    [participantName, participantEmail, participantPendidikan, participantNoHp, totalQuestions, startTime, timePerQuestion]
+    [participantName, participantEmail, participantPendidikan, participantNoHp, totalQuestions, startTime, timePerQuestion, maxIncorrectAnswers, minQuestionsPerMinute]
   );
 
   // ✅ SUBMIT ANSWER - DENGAN TRACKING WAKTU
@@ -467,11 +482,11 @@ export default function TestPage() {
               <p className="text-(--text1) mb-4">
                 Anda akan mengerjakan <strong>{totalQuestions} soal</strong>{" "}
                 penjumlahan dalam{" "}
-                <strong>{Math.floor(timeLeft / 60)} menit</strong>.
+                <strong>{Math.floor(timeLeft / 60)} menit</strong> ({timeLeft} detik).
               </p>
               <div className="bg-yellow-50/10 border border-(--aksen1) rounded-lg p-3 text-sm text-(--aksen1) mb-2">
-                <strong>Persyaratan Kelulusan:</strong> Harus menjawab benar{" "}
-                <strong>{minBenar} soal</strong> untuk lulus.
+                <strong>Persyaratan Kelulusan:</strong> Harus menjawab minimal{" "}
+                <strong>35 penjumlahan per menit</strong> di setiap menit untuk lulus.
               </div>
               <div className="bg-indigo-50/10 rounded-lg p-4 text-sm text-(--text1)">
                 <p>✓ Pastikan koneksi internet stabil</p>
@@ -549,8 +564,7 @@ export default function TestPage() {
               <div className="text-center mb-6">
                 <div className="text-sm text-gray-500 mb-2">
                   Soal {questionNumber} dari {totalQuestions} • Sisa waktu{" "}
-                  {Math.floor(timeLeft / 60)}:
-                  {String(timeLeft % 60).padStart(2, "0")}
+                  {Math.floor(timeLeft / 60)} menit {timeLeft % 60} detik
                 </div>
                 <div className="text-6xl font-bold text-(--button1) mb-4">
                   {currentQuestion.num1} + {currentQuestion.num2}
@@ -628,7 +642,7 @@ export default function TestPage() {
                   </div>
                   <div>
                     <div className="text-3xl font-bold text-indigo-600">
-                      {formatTime(testResult.totalTime)}
+                      {Math.floor(testResult.totalTime / 60)} menit
                     </div>
                     <div className="text-sm text-gray-600">Waktu</div>
                   </div>
@@ -643,7 +657,7 @@ export default function TestPage() {
                     <div className="text-sm text-gray-600">
                       {testResult.isPassed
                         ? "Selamat anda lulus!"
-                        : `Butuh minimal ${totalQuestions*0.8} benar`}
+                        : `Setiap menit harus minimal 35 soal untuk lulus`}
                     </div>
                   </div>
                 </div>
@@ -714,7 +728,7 @@ export default function TestPage() {
                     />
                     <YAxis 
                       stroke="#999"
-                      label={{ value: 'Jumlah Soal', angle: -90, position: 'insideLeft', fill: '#999' }}
+                      label={{ value: 'Jumlah Soal yang Dijawab', angle: -90, position: 'insideLeft', fill: '#999' }}
                     />
                     <Tooltip 
                       contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #4b5563' }}
