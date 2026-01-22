@@ -11,35 +11,41 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    try {
-      const response = await fetch(`${config.apiUrl}/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ email, password })
-      });
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-      const data = await response.json();
+  try {
+    const response = await fetch(`${config.apiUrl}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ email, password }),
+    });
 
-      if (response.ok && data.success) {
-        toast.success("Login berhasil!");
-        navigate('/admin');
-      } else {
-        toast.error(data.message || "Login gagal")
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      // Simpan token di localStorage sebagai fallback
+      if (data.token) {
+        localStorage.setItem("auth_token", data.token);
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      toast.error("Terjadi kesalahan saat login")
-    } finally {
-      setLoading(false);
+
+      toast.success("Login berhasil!");
+      navigate("/admin");
+    } else {
+      toast.error(data.message || "Login gagal");
     }
-  };
+  } catch (error) {
+    console.error("Login error:", error);
+    toast.error("Terjadi kesalahan saat login");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">

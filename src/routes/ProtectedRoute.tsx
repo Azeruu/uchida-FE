@@ -13,34 +13,57 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        console.log('Checking auth...');
-        let response = await fetch(`${config.apiUrl}/me`, {
-          credentials: 'include',
-        });
-        console.log('Response status:', response.status); // Debug
-      console.log('Response headers:', response.headers); // Debug
-      
-        let data = await response.json();
-        console.log('Response data:', data); // Debug
-      
-        if (response.ok && data.success && data.user?.role === 'admin') {
+useEffect(() => {
+  const checkAuth = async () => {
+    try {
+      console.log("Checking auth...");
+
+      // Ambil token dari localStorage sebagai fallback
+      const localToken = localStorage.getItem("auth_token");
+
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      // Jika ada token di localStorage, kirim via Authorization header
+      if (localToken) {
+        headers["Authorization"] = `Bearer ${localToken}`;
+      }
+
+      const response = await fetch(`${config.apiUrl}/me`, {
+        method: "GET",
+        credentials: "include", // Tetap kirim cookie jika ada
+        headers,
+      });
+
+      console.log("Response status:", response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Response data:", data);
+
+        if (data.success && data.user?.role === "admin") {
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);
+          localStorage.removeItem("auth_token"); // Clear invalid token
         }
-      } catch (error) {
-        console.error('Auth check failed:', error);
+      } else {
+        console.log("Response not OK");
         setIsAuthenticated(false);
-      } finally {
-        setLoading(false);
+        localStorage.removeItem("auth_token");
       }
-    };
+    } catch (error) {
+      console.error("Auth check failed:", error);
+      setIsAuthenticated(false);
+      localStorage.removeItem("auth_token");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    checkAuth();
-  }, []);
+  checkAuth();
+}, []);
 
   // Loading state
   if (loading) {
