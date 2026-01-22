@@ -3,67 +3,77 @@ import { Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import config from "../config";
 
-
 interface Props {
   children: React.ReactNode;
 }
-
 
 const ProtectedRoute: React.FC<Props> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  const checkAuth = async () => {
-    try {
-      console.log("Checking auth...");
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        console.log("🔍 Checking authentication...");
 
-      // Ambil token dari localStorage sebagai fallback
-      const localToken = localStorage.getItem("auth_token");
+        // Ambil token dari localStorage
+        const token = localStorage.getItem("auth_token");
 
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-      };
-
-      // Jika ada token di localStorage, kirim via Authorization header
-      if (localToken) {
-        headers["Authorization"] = `Bearer ${localToken}`;
-      }
-
-      const response = await fetch(`${config.apiUrl}/me`, {
-        method: "GET",
-        credentials: "include", // Tetap kirim cookie jika ada
-        headers,
-      });
-
-      console.log("Response status:", response.status);
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Response data:", data);
-
-        if (data.success && data.user?.role === "admin") {
-          setIsAuthenticated(true);
-        } else {
+        if (!token) {
+          console.log("❌ No token found in localStorage");
           setIsAuthenticated(false);
-          localStorage.removeItem("auth_token"); // Clear invalid token
+          setLoading(false);
+          return;
         }
-      } else {
-        console.log("Response not OK");
-        setIsAuthenticated(false);
-        localStorage.removeItem("auth_token");
-      }
-    } catch (error) {
-      console.error("Auth check failed:", error);
-      setIsAuthenticated(false);
-      localStorage.removeItem("auth_token");
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  checkAuth();
-}, []);
+        console.log("✅ Token found:", token.substring(0, 20) + "...");
+
+        // Kirim request dengan Bearer token
+        const response = await fetch(`${config.apiUrl}/me`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // PRIMARY AUTH METHOD
+          },
+          credentials: "include", // Backup: kirim cookie jika ada
+        });
+
+        console.log("📡 Response status:", response.status);
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("📦 Response data:", data);
+
+          if (data.success && data.user?.role === "admin") {
+            console.log("✅ User authenticated as admin");
+            setIsAuthenticated(true);
+          } else {
+            console.log("❌ User not admin or invalid response");
+            setIsAuthenticated(false);
+            // Clear invalid token
+            localStorage.removeItem("auth_token");
+            localStorage.removeItem("user");
+          }
+        } else {
+          console.log("❌ Response not OK:", response.status);
+          setIsAuthenticated(false);
+          // Clear invalid token
+          localStorage.removeItem("auth_token");
+          localStorage.removeItem("user");
+        }
+      } catch (error) {
+        console.error("❌ Auth check failed:", error);
+        setIsAuthenticated(false);
+        // Clear tokens on error
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("user");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   // Loading state
   if (loading) {

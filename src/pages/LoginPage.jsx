@@ -1,51 +1,56 @@
-import React, { useState } from 'react';
-import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
-import { toast } from "sonner"
-import { useNavigate } from 'react-router-dom';
-import config from '../config';
+import React, { useState } from "react";
+import { Lock, Mail, Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import config from "../config";
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-  try {
-    const response = await fetch(`${config.apiUrl}/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const response = await fetch(`${config.apiUrl}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // Tetap kirim cookie sebagai backup
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (response.ok && data.success) {
-      // Simpan token di localStorage sebagai fallback
-      if (data.token) {
-        localStorage.setItem("auth_token", data.token);
+      if (response.ok && data.success) {
+        // Simpan token di localStorage
+        if (data.token) {
+          localStorage.setItem("auth_token", data.token);
+          console.log("✅ Token saved to localStorage");
+        }
+
+        // Simpan user info (opsional, untuk UI)
+        if (data.user) {
+          localStorage.setItem("user", JSON.stringify(data.user));
+        }
+
+        toast.success("Login berhasil!");
+        navigate("/admin");
+      } else {
+        toast.error(data.message || "Login gagal");
       }
-
-      toast.success("Login berhasil!");
-      navigate("/admin");
-    } else {
-      toast.error(data.message || "Login gagal");
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error("Terjadi kesalahan saat login");
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Login error:", error);
-    toast.error("Terjadi kesalahan saat login");
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -55,13 +60,15 @@ const handleSubmit = async (e) => {
             <Lock className="w-8 h-8 text-indigo-600" />
           </div>
           <h1 className="text-2xl font-bold text-(--text1)">Selamat Datang</h1>
-          <p className="text-(--aksen1) text-xs mt-2">Pilih akses yang diinginkan</p>
+          <p className="text-(--aksen1) text-xs mt-2">
+            Pilih akses yang diinginkan
+          </p>
         </div>
 
         {/* Guest Access Button */}
         <div className="mb-6">
           <button
-            onClick={() => window.location.href = '/test'}
+            onClick={() => (window.location.href = "/test")}
             className="w-full bg-(--button1) hover:bg-(--hover1) text-white font-bold py-3 rounded-lg transition mb-4"
           >
             Mulai Test sebagai Guest
@@ -70,7 +77,9 @@ const handleSubmit = async (e) => {
 
         {/* Admin Login Form */}
         <div className="border-t pt-3 border-indigo-300/50">
-          <h3 className="text-xl  font-semibold text-(--aksen1) mb-4 text-center">Login Admin</h3>
+          <h3 className="text-xl  font-semibold text-(--aksen1) mb-4 text-center">
+            Login Admin
+          </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-(--text1) mb-2">
@@ -94,7 +103,7 @@ const handleSubmit = async (e) => {
               </label>
               <div className="relative">
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="**********"
@@ -106,7 +115,11 @@ const handleSubmit = async (e) => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -116,14 +129,18 @@ const handleSubmit = async (e) => {
               disabled={loading}
               className="w-full bg-(--button1) hover:bg-(--hover1) disabled:bg-gray-400 text-white font-bold py-3 rounded-lg transition"
             >
-              {loading ? 'Memproses...' : 'Login Admin'}
+              {loading ? "Memproses..." : "Login Admin"}
             </button>
           </form>
 
           <div className="mt-4 text-center text-sm text-gray-500">
             <p>Kredensial admin:</p>
-            <p><strong>Email:</strong> admin.kim@gmail.com</p>
-            <p><strong>Password:</strong> kimkantor1</p>
+            <p>
+              <strong>Email:</strong> admin.kim@gmail.com
+            </p>
+            <p>
+              <strong>Password:</strong> kimkantor1
+            </p>
           </div>
         </div>
       </div>
