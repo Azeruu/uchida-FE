@@ -15,6 +15,9 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
     const checkAuth = async () => {
       try {
         console.log("🔍 Checking authentication...");
+        console.log("🌐 Current hostname:", window.location.hostname);
+        console.log("🔧 API URL from config:", config.apiUrl); // PENTING!
+        console.log("🔍 Checking authentication...");
 
         // Ambil token dari localStorage
         const token = localStorage.getItem("auth_token");
@@ -29,13 +32,16 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
         console.log("✅ Token found:", token.substring(0, 20) + "...");
 
         // Kirim request dengan Bearer token
-        const response = await fetch(`${config.apiUrl}/me`, {
+        const apiUrl = `${config.apiUrl}/me`;
+        console.log("📡 Calling API:", apiUrl);
+
+        const response = await fetch(apiUrl, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // PRIMARY AUTH METHOD
+            Authorization: `Bearer ${token}`,
           },
-          credentials: "include", // Backup: kirim cookie jika ada
+          credentials: "include",
         });
 
         console.log("📡 Response status:", response.status);
