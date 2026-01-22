@@ -19,7 +19,6 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
         console.log('Checking auth...');
         const token = localStorage.getItem('auth_token');
         const response = await fetch(`${config.apiUrl}/me`, {
-          credentials: 'include', // Kirim cookies
           headers: {
             ...(token ? { 'Authorization': `Bearer ${token}` } : {})
           }

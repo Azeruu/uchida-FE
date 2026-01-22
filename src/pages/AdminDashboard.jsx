@@ -374,7 +374,6 @@ export default function AdminDashboard() {
     try {
       const token = localStorage.getItem('auth_token');
       const response = await fetch(`${config.apiUrl}/test-results`, {
-        credentials: 'include',
         headers: {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         }
@@ -396,7 +395,6 @@ export default function AdminDashboard() {
     try {
       const token = localStorage.getItem('auth_token');
       const response = await fetch(`${config.apiUrl}/statistics`, {
-        credentials: 'include',
         headers: {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         }
@@ -416,7 +414,6 @@ export default function AdminDashboard() {
     try {
       const token = localStorage.getItem('auth_token');
       const response = await fetch(`${config.apiUrl}/questions`, {
-        credentials: "include",
         headers: {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         }
@@ -518,7 +515,6 @@ export default function AdminDashboard() {
     try {
       const token = localStorage.getItem('auth_token');
       const r = await fetch(`${config.apiUrl}/config`, {
-        credentials: "include",
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -557,7 +553,6 @@ export default function AdminDashboard() {
           "Content-Type": "application/json",
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
-        credentials: "include",
         body: JSON.stringify({ durationSeconds, questionCount, maxIncorrectAnswers, minQuestionsPerMinute, pairs }),
       });
       const data = await r.json();
@@ -594,7 +589,6 @@ export default function AdminDashboard() {
       const token = localStorage.getItem('auth_token');
       const response = await fetch(`${config.apiUrl}/test-results/${id}`, {
         method: "DELETE",
-        credentials: "include",
         headers: {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         }
@@ -660,18 +654,8 @@ export default function AdminDashboard() {
               </button>
               <button
                 onClick={() => {
-                  // Clear session cookie by calling logout endpoint
-                  fetch(`${config.apiUrl}/logout`, {
-                    method: "POST",
-                    credentials: "include",
-                  })
-                    .then(() => {
-                      window.location.href = "/";
-                    })
-                    .catch((e) => {
-                      console.error("Logout failed", e);
-                      window.location.href = "/login";
-                    });
+                  localStorage.removeItem('auth_token');
+                  window.location.href = "/login";
                 }}
                 className="bg-(--button2) hover:bg-(--hover2)/50 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
               >
