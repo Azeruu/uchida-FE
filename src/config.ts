@@ -12,7 +12,7 @@ const config = {
     (typeof process !== "undefined" && process.env && process.env.VITE_API_URL) ||
     (window.location.hostname === "localhost"
       ? "http://localhost:8080/api"
-      : "https://https://uchida-be.onrender.com/api"), // Ganti dengan backend production URL
+      : "https://uchida-be.onrender.com/api"), // Ganti dengan backend production URL
 };
 
 export default config;
