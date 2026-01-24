@@ -1,4 +1,4 @@
-// hooks/useAuth.ts - SIMPLIFIED & CORS-FRIENDLY
+// hooks/useAuth.ts - HYBRID APPROACH (localStorage + fallback)
 import { useState, useEffect } from "react";
 import config from "../config";
 
@@ -16,26 +16,43 @@ export const useAuth = () => {
     try {
       console.log("\n🔍 [useAuth] Checking authentication...");
 
-      // Log cookies
-      console.log(`   Cookies: ${document.cookie || "(empty)"}`);
+      // 1. Cek localStorage dulu
+      const storedToken = localStorage.getItem("auth_token");
+      console.log(
+        `   localStorage.auth_token: ${storedToken ? "✅ Found" : "❌ Not found"}`,
+      );
 
-      // Call /me endpoint
+      if (!storedToken) {
+        console.log(`   → No token, user not authenticated`);
+        setIsAuthenticated(false);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      // 2. Verify token dengan server
+      console.log(`   → Verifying token with server...`);
       const response = await fetch(`${config.apiUrl}/me`, {
         method: "GET",
-        credentials: "include", // 🔴 PENTING! Include cookies
+        headers: {
+          Authorization: `Bearer ${storedToken}`, // 🔴 Send token di header
+        },
+        credentials: "include",
       });
 
       console.log(`   /me status: ${response.status}`);
 
       if (response.ok) {
         const data = await response.json();
-        console.log(`   ✅ Authenticated as: ${data.user?.email}`);
+        console.log(`   ✅ Token valid`);
+        console.log(`   👤 User: ${data.user?.email}`);
         setUser(data.user);
         setIsAuthenticated(true);
       } else {
-        console.log(`   ❌ Not authenticated (${response.status})`);
+        console.log(`   ❌ Token invalid (${response.status})`);
         setUser(null);
         setIsAuthenticated(false);
+        // Jangan hapus token, biarkan tetap di localStorage
       }
     } catch (err: any) {
       console.error(`   ❌ Error: ${err.message}`);
@@ -50,9 +67,12 @@ export const useAuth = () => {
     try {
       console.log("\n🚪 [useAuth] Logout initiated");
 
-      // Call logout endpoint
+      // Call backend logout endpoint (optional)
       await fetch(`${config.apiUrl}/logout`, {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("auth_token") || ""}`,
+        },
         credentials: "include",
       }).catch(() => {});
 
@@ -64,9 +84,19 @@ export const useAuth = () => {
       setUser(null);
 
       console.log("   ✅ Logged out");
-    } catch (err) {
-      console.error("   ❌ Logout error:", err);
+    } catch (err: any) {
+      console.error("   ❌ Logout error:", err.message);
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("user");
+      setIsAuthenticated(false);
+      setUser(null);
     }
+  };
+
+  const refetch = async () => {
+    console.log("🔄 [useAuth] Manual refetch triggered");
+    setLoading(true);
+    checkAuth();
   };
 
   return {
@@ -74,6 +104,6 @@ export const useAuth = () => {
     user,
     loading,
     logout,
-    refetch: checkAuth,
+    refetch,
   };
 };
