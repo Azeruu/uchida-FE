@@ -20,6 +20,9 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import config from "../config";
+import { useAuth } from "../hooks/useAuth";
+import LogoutButton from "../components/LogoutButton";
+import { useNavigate } from "react-router-dom";
 
 // Format waktu dalam menit dan detik (helper function)
 const formatTimeMinutesSeconds = (seconds) => {
@@ -363,6 +366,14 @@ export default function AdminDashboard() {
   const [saving, setSaving] = useState(false);
   const [questionsHistory, setQuestionsHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    if (!confirm("Apakah Anda yakin ingin logout?")) return;
+
+    await logout();
+    navigate("/login", { replace: true });
+  };
   
   // --- STATE BARU UNTUK MODAL ---
   const [selectedResult, setSelectedResult] = useState(null);
@@ -635,7 +646,7 @@ export default function AdminDashboard() {
                 <RefreshCw className="w-4 h-4" />
                 Refresh
               </button>
-              <button
+              {/* <button
                 onClick={() => {
                   fetch(`${config.apiUrl}/logout`, {
                     method: "POST",
@@ -651,7 +662,14 @@ export default function AdminDashboard() {
                 className="bg-(--button2) hover:bg-(--hover2)/50 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
               >
                 Logout
-              </button>
+              </button> */}
+            {/* ✅ LOGOUT BUTTON INLINE */}
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition"
+            >
+              Logout
+            </button>
             </div>
           </div>
         </div>

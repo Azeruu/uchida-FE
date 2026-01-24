@@ -1,4 +1,4 @@
-import { useState } from "react";
+import{ useState } from "react";
 import {
   Lock,
   Mail,
@@ -8,7 +8,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import config from "../config";
 
 export default function Login() {
@@ -18,6 +18,10 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Get redirect URL dari query parameter
+  const redirectUrl = searchParams.get("redirect") || "/admin";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,13 +60,41 @@ export default function Login() {
 
       console.log("✅ 4️⃣ Login successful");
 
-      console.log("✅ 8️⃣ Login cookie set. Ready to navigate.");
+      // PENTING: Simpan token
+      if (data.token) {
+        console.log("💾 5️⃣ Saving token to localStorage...");
+        console.log("   Token preview:", data.token.substring(0, 50) + "...");
+        console.log("   Token length:", data.token.length);
+
+        localStorage.setItem("auth_token", data.token);
+
+        // Verify
+        const savedToken = localStorage.getItem("auth_token");
+        if (savedToken) {
+          console.log("✅ 6️⃣ Token saved successfully");
+          console.log("   Saved token matches:", savedToken === data.token);
+        } else {
+          console.error("❌ 6️⃣ Token save failed!");
+          throw new Error("Failed to save token to localStorage");
+        }
+      } else {
+        console.error("❌ No token in response!");
+        throw new Error("No token received from server");
+      }
+
+      // Simpan user info
+      if (data.user) {
+        console.log("💾 7️⃣ Saving user info...");
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+
+      console.log("✅ 8️⃣ All data saved. Ready to navigate.");
       toast.success("Login berhasil! 🎉");
 
       // Wait a bit untuk localStorage finalize
       setTimeout(() => {
-        console.log("🚀 9️⃣ Navigating to /admin...");
-        navigate("/admin", { replace: true });
+        console.log("🚀 9️⃣ Navigating to", redirectUrl);
+        navigate(redirectUrl, { replace: true });
       }, 300);
     } catch (err: any) {
       console.error("❌ Login error:", err);
