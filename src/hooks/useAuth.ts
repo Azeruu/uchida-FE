@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+// hooks/useAuth.ts
+import { useState, useEffect, useCallback } from "react";
 import config from "../config";
 
 export const useAuth = () => {
@@ -7,94 +8,154 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const checkAuth = async (retryCount = 0) => {
+  // Verify token dengan server
+  const verifyToken = useCallback(async (token: string): Promise<boolean> => {
     try {
-      console.log(
-        "🔍 Checking authentication... (attempt",
-        retryCount + 1,
-        ")",
-      );
-      const token = localStorage.getItem("auth_token");
+      console.log("🔐 [useAuth] Verifying token with server...");
+      console.log("   Token preview:", token.substring(0, 30) + "...");
 
-      if (!token) {
-        console.log("❌ No token in localStorage");
-        setIsAuthenticated(false);
-        setUser(null);
-        setError(null);
-        return;
-      }
-
-      console.log("✅ Token found, verifying with server...");
       const response = await fetch(`${config.apiUrl}/me`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, // PENTING: include token di header
         },
-        credentials: "include", // PENTING: kirim cookies jika ada
+        credentials: "include", // PENTING: include cookies jika ada
       });
 
-      console.log("📡 /me response status:", response.status);
+      console.log("   Response status:", response.status);
 
       if (response.ok) {
         const data = await response.json();
-        console.log("✅ Auth check successful:", data.user);
+        console.log("   ✅ Token is valid");
+        console.log("   User:", data.user);
 
         if (data.user?.role === "admin") {
-          setIsAuthenticated(true);
+          console.log("   ✅ User has admin role");
           setUser(data.user);
+          setIsAuthenticated(true);
           setError(null);
+          return true;
         } else {
-          setIsAuthenticated(false);
-          setUser(null);
-          setError("User tidak memiliki role admin");
-          localStorage.removeItem("auth_token");
+          console.log("   ❌ User does not have admin role");
+          setError("Not an admin user");
+          return false;
         }
       } else if (response.status === 401) {
-        console.log("⚠️ Token expired atau tidak valid");
-        setIsAuthenticated(false);
-        setUser(null);
-        setError("Token expired");
-        localStorage.removeItem("auth_token");
+        console.log("   ❌ Token is invalid or expired (401)");
+        // Jangan langsung hapus token, beri chance untuk refetch
+        setError("Token expired or invalid");
+        return false;
       } else {
-        // Jika error server, coba retry max 2x
-        if (retryCount < 2) {
-          console.log("🔄 Server error, retrying...");
-          setTimeout(() => checkAuth(retryCount + 1), 1000);
-          return;
-        }
-        throw new Error(`Auth check failed: ${response.status}`);
+        console.log("   ❌ Server error:", response.status);
+        setError(`Server error: ${response.status}`);
+        return false;
       }
     } catch (err: any) {
-      console.error("❌ Auth check error:", err);
-      setIsAuthenticated(false);
-      setUser(null);
-      setError(err.message || "Failed to check authentication");
-    } finally {
-      setLoading(false);
+      console.error("   💥 Error verifying token:", err.message);
+      setError(err.message);
+      return false;
     }
-  };
-
-  useEffect(() => {
-    checkAuth();
   }, []);
+
+  // Main auth check logic
+  const checkAuth = useCallback(
+    async (retryCount = 0) => {
+      try {
+        console.log(
+          `\n🔍 [useAuth] Checking auth (attempt ${retryCount + 1})...`,
+        );
+
+        // 1. Check if token exists in localStorage
+        const token = localStorage.getItem("auth_token");
+        console.log(
+          "   localStorage.auth_token:",
+          token ? `✅ Found (${token.length} chars)` : "❌ Not found",
+        );
+
+        if (!token) {
+          console.log("   → No token, user is not authenticated");
+          setIsAuthenticated(false);
+          setUser(null);
+          setError(null);
+          setLoading(false);
+          return;
+        }
+
+        // 2. Verify token with server
+        const isValid = await verifyToken(token);
+
+        if (isValid) {
+          console.log("   → Auth check PASSED");
+          setIsAuthenticated(true);
+          setLoading(false);
+        } else {
+          console.log("   → Auth check FAILED");
+
+          // Jika token tidak valid dan belum retry, coba sekali lagi
+          if (retryCount < 1) {
+            console.log("   → Retrying in 2 seconds...");
+            setTimeout(() => checkAuth(retryCount + 1), 2000);
+            return;
+          }
+
+          // Jika tetap gagal, hapus token
+          console.log("   → Removing invalid token");
+          localStorage.removeItem("auth_token");
+          localStorage.removeItem("user");
+          setIsAuthenticated(false);
+          setUser(null);
+          setLoading(false);
+        }
+      } catch (err: any) {
+        console.error("💥 [useAuth] Error:", err.message);
+        setError(err.message);
+        setIsAuthenticated(false);
+        setUser(null);
+        setLoading(false);
+      }
+    },
+    [verifyToken],
+  );
+
+  // Run once on mount
+  useEffect(() => {
+    console.log("");
+    console.log("═══════════════════════════════════════════");
+    console.log("⚙️  useAuth Hook Initialized");
+    console.log("═══════════════════════════════════════════");
+
+    checkAuth();
+  }, [checkAuth]);
 
   const logout = async () => {
     try {
-      console.log("🔄 Logging out...");
+      console.log("🚪 [useAuth] Logging out...");
+
       await fetch(`${config.apiUrl}/logout`, {
         method: "POST",
         credentials: "include",
+      }).catch(() => {
+        // Ignore logout error
       });
-    } catch (err) {
-      console.error("Logout error:", err);
-    } finally {
+
       localStorage.removeItem("auth_token");
       localStorage.removeItem("user");
       setIsAuthenticated(false);
       setUser(null);
+      setError(null);
+
+      console.log("   ✅ Logout successful");
+    } catch (err: any) {
+      console.error("   ❌ Logout error:", err.message);
     }
   };
+
+  const refetch = useCallback(() => {
+    console.log("🔄 [useAuth] Manual refetch triggered");
+    setLoading(true);
+    checkAuth();
+  }, [checkAuth]);
 
   return {
     isAuthenticated,
@@ -102,6 +163,6 @@ export const useAuth = () => {
     loading,
     error,
     logout,
-    refetch: checkAuth,
+    refetch,
   };
 };
