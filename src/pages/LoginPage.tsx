@@ -56,35 +56,7 @@ export default function Login() {
 
       console.log("✅ 4️⃣ Login successful");
 
-      // PENTING: Simpan token
-      if (data.token) {
-        console.log("💾 5️⃣ Saving token to localStorage...");
-        console.log("   Token preview:", data.token.substring(0, 50) + "...");
-        console.log("   Token length:", data.token.length);
-
-        localStorage.setItem("auth_token", data.token);
-
-        // Verify
-        const savedToken = localStorage.getItem("auth_token");
-        if (savedToken) {
-          console.log("✅ 6️⃣ Token saved successfully");
-          console.log("   Saved token matches:", savedToken === data.token);
-        } else {
-          console.error("❌ 6️⃣ Token save failed!");
-          throw new Error("Failed to save token to localStorage");
-        }
-      } else {
-        console.error("❌ No token in response!");
-        throw new Error("No token received from server");
-      }
-
-      // Simpan user info
-      if (data.user) {
-        console.log("💾 7️⃣ Saving user info...");
-        localStorage.setItem("user", JSON.stringify(data.user));
-      }
-
-      console.log("✅ 8️⃣ All data saved. Ready to navigate.");
+      console.log("✅ 8️⃣ Login cookie set. Ready to navigate.");
       toast.success("Login berhasil! 🎉");
 
       // Wait a bit untuk localStorage finalize
