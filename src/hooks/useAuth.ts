@@ -16,15 +16,13 @@ export const useAuth = () => {
     try {
       console.log("\n🔍 [useAuth] Checking authentication...");
 
-      // Baca dari localStorage (backup)
-      const storedToken = localStorage.getItem("auth_token");
-      console.log(`   localStorage.auth_token: ${storedToken ? "✅" : "❌"}`);
+      // Log cookies
+      console.log(`   Cookies: ${document.cookie || "(empty)"}`);
 
       // Call /me endpoint
-      // PENTING: credentials: 'include' - ini yang bikin cookie terkirim!
       const response = await fetch(`${config.apiUrl}/me`, {
         method: "GET",
-        credentials: "include", // 🔴 PENTING! Ini yang send cookie!
+        credentials: "include", // 🔴 PENTING! Include cookies
       });
 
       console.log(`   /me status: ${response.status}`);
@@ -35,7 +33,7 @@ export const useAuth = () => {
         setUser(data.user);
         setIsAuthenticated(true);
       } else {
-        console.log(`   ❌ Not authenticated`);
+        console.log(`   ❌ Not authenticated (${response.status})`);
         setUser(null);
         setIsAuthenticated(false);
       }
