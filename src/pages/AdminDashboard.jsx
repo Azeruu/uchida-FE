@@ -21,8 +21,9 @@ import {
 } from "recharts";
 import config from "../config";
 import { useAuth } from "../hooks/useAuth";
-// import LogoutButton from "../components/LogoutButton";
 import { useNavigate } from "react-router-dom";
+
+const getAuthToken = () => localStorage.getItem("auth_token");
 
 // Format waktu dalam menit dan detik (helper function)
 const formatTimeMinutesSeconds = (seconds) => {
@@ -383,13 +384,20 @@ export default function AdminDashboard() {
   const fetchResults = async () => {
     setLoading(true);
     try {
+      const token = getAuthToken(); // Ambil token
       const response = await fetch(`${config.apiUrl}/test-results`, {
-        credentials: 'include',
+        headers: {
+          Authorization: `Bearer ${token}`, // Pasang token di sini
+          "Content-Type": "application/json",
+        },
       });
       const data = await response.json();
 
       if (response.ok) {
         setResults(data.data || []);
+      } else {
+        // Handle jika token expired saat fetch
+        if (response.status === 401) logout();
       }
     } catch (error) {
       console.error("Error fetching results:", error);
@@ -401,8 +409,12 @@ export default function AdminDashboard() {
   // Fetch statistics
   const fetchStatistics = async () => {
     try {
+      const token = getAuthToken();
       const response = await fetch(`${config.apiUrl}/statistics`, {
-        credentials: 'include',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
       const data = await response.json();
 
@@ -417,42 +429,51 @@ export default function AdminDashboard() {
   // Fetch questions history
   const fetchQuestionsHistory = async () => {
     try {
+      const token = getAuthToken();
       const response = await fetch(`${config.apiUrl}/questions`, {
-        credentials: 'include',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
       const data = await response.json();
 
       if (response.ok) {
         setQuestionsHistory(data.data);
       }
-    } catch (error){
+    } catch (error) {
       console.error("Error fetching questions history:", error);
     }
   };
 
-  useEffect(() => {
-    fetchResults();
-    fetchStatistics();
-    fetchQuestionsHistory();
-    // load current config
-    (async () => {
-      try {
-        const r = await fetch(`${config.apiUrl}/config`, {
-           credentials: 'include',
-        });
-        const d = await r.json();
-        if (r.ok && d.data) {
-          setDurationSeconds(d.data.durationSeconds || 15 * 60);
-          setQuestionCount(d.data.questionCount || 525);
-          setMaxIncorrectAnswers(d.data.maxIncorrectAnswers ?? 7);
-          setMinQuestionsPerMinute(d.data.minQuestionsPerMinute ?? 35);
-          setPairs(Array.isArray(d.data.pairs) ? d.data.pairs : []);
-        }
-      } catch (e) {
-        console.error("Failed to load config", e);
+useEffect(() => {
+  fetchResults();
+  fetchStatistics();
+  fetchQuestionsHistory();
+
+  (async () => {
+    try {
+      const token = getAuthToken();
+      const r = await fetch(`${config.apiUrl}/config`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Penting!
+          "Content-Type": "application/json",
+        },
+      });
+      const d = await r.json();
+      if (r.ok && d.data) {
+        // ... logic set state sama seperti sebelumnya
+        setDurationSeconds(d.data.durationSeconds || 15 * 60);
+        setQuestionCount(d.data.questionCount || 525);
+        setMaxIncorrectAnswers(d.data.maxIncorrectAnswers ?? 7);
+        setMinQuestionsPerMinute(d.data.minQuestionsPerMinute ?? 35);
+        setPairs(Array.isArray(d.data.pairs) ? d.data.pairs : []);
       }
-    })();
-  }, []);
+    } catch (e) {
+      console.error("Failed to load config", e);
+    }
+  })();
+}, []);
 
   // Filter results by date
   const getFilteredResults = () => {
@@ -509,95 +530,94 @@ export default function AdminDashboard() {
     return "text-red-600 bg-red-100";
   };
 
-  const handleRegenerate = async () => {
-    setSaving(true);
-    try {
-      const r = await fetch(`${config.apiUrl}/config`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          regenerate: true,
-          durationSeconds,
-          questionCount,
-          maxIncorrectAnswers,
-          minQuestionsPerMinute,
-        }),
-      });
-      const d = await r.json();
-      if (r.ok && d.data) {
-        setPairs(d.data.pairs);
-        setDurationSeconds(d.data.durationSeconds);
-        setQuestionCount(d.data.questionCount);
-        setMaxIncorrectAnswers(d.data.maxIncorrectAnswers);
-        setMinQuestionsPerMinute(d.data.minQuestionsPerMinute);
-      }
-    } catch (e) {
-      console.error("Failed to regenerate", e);
-    } finally {
-      setSaving(false);
+const handleRegenerate = async () => {
+  setSaving(true);
+  try {
+    const token = getAuthToken();
+    const r = await fetch(`${config.apiUrl}/config`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // Tambah ini
+      },
+      body: JSON.stringify({
+        regenerate: true,
+        durationSeconds,
+        questionCount,
+        maxIncorrectAnswers,
+        minQuestionsPerMinute,
+      }),
+    });
+    const d = await r.json();
+    if (r.ok && d.data) {
+      setPairs(d.data.pairs);
+      setDurationSeconds(d.data.durationSeconds);
+      setQuestionCount(d.data.questionCount);
+      setMaxIncorrectAnswers(d.data.maxIncorrectAnswers);
+      setMinQuestionsPerMinute(d.data.minQuestionsPerMinute);
     }
-  };
+  } catch (e) {
+    console.error("Failed to regenerate", e);
+  } finally {
+    setSaving(false);
+  }
+};
 
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const r = await fetch(`${config.apiUrl}/config`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ durationSeconds, questionCount, maxIncorrectAnswers, minQuestionsPerMinute, pairs }),
-      });
-      const data = await r.json();
-      if (r.ok && data.data) {
-        setPairs(data.data.pairs);
-        setQuestionCount(data.data.questionCount);
-        setDurationSeconds(data.data.durationSeconds);
-        setMaxIncorrectAnswers(data.data.maxIncorrectAnswers);
-        setMinQuestionsPerMinute(data.data.minQuestionsPerMinute);
-        // Refresh questions history
-        fetchQuestionsHistory();
-        alert("Konfigurasi berhasil disimpan ke database!");
-      } else {
-        const errorMsg = data.error || data.message || "Unknown error";
-        alert("Gagal menyimpan konfigurasi: " + errorMsg);
-        console.error("Save config error:", data);
-      }
-    } catch (e) {
-      console.error("Failed to save config", e);
-      alert("Gagal menyimpan konfigurasi");
-    } finally {
-      setSaving(false);
+const handleSave = async () => {
+  setSaving(true);
+  try {
+    const token = getAuthToken();
+    const r = await fetch(`${config.apiUrl}/config`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // Tambah ini
+      },
+      body: JSON.stringify({
+        durationSeconds,
+        questionCount,
+        maxIncorrectAnswers,
+        minQuestionsPerMinute,
+        pairs,
+      }),
+    });
+    const data = await r.json();
+    if (r.ok && data.data) {
+      setPairs(data.data.pairs);
+      setQuestionCount(data.data.questionCount);
+      setDurationSeconds(data.data.durationSeconds);
+      setMaxIncorrectAnswers(data.data.maxIncorrectAnswers);
+      setMinQuestionsPerMinute(data.data.minQuestionsPerMinute);
+      // Refresh questions history
+      fetchQuestionsHistory();
+      alert("Konfigurasi berhasil disimpan ke database!");
+    } else {
+      const errorMsg = data.error || data.message || "Unknown error";
+      alert("Gagal menyimpan konfigurasi: " + errorMsg);
+      console.error("Save config error:", data);
     }
-  };
+  } catch (e) {
+    console.error("Failed to save config", e);
+    alert("Gagal menyimpan konfigurasi");
+  } finally {
+    setSaving(false);
+  }
+};
 
   // Handle delete test result
   const handleDelete = async (id) => {
-    if (!confirm("Apakah Anda yakin ingin menghapus hasil test ini?")) {
-      return;
-    }
-
+    if (!confirm("Hapus data?")) return;
     setDeletingId(id);
     try {
-      const response = await fetch(`${config.apiUrl}/test-results/${id}`, {
+      const token = getAuthToken();
+      await fetch(`${config.apiUrl}/test-results/${id}`, {
         method: "DELETE",
-        credentials: 'include',
+        headers: {
+          Authorization: `Bearer ${token}`, // Tambah ini
+        },
       });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        // Refresh results
-        fetchResults();
-        fetchStatistics();
-        alert("Hasil test berhasil dihapus!");
-      } else {
-        alert("Gagal menghapus hasil test: " + (data.error || data.message || "Unknown error"));
-      }
+      fetchResults();
+      fetchStatistics();
     } catch (error) {
       console.error("Error deleting test result:", error);
       alert("Gagal menghapus hasil test");
