@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import config from "../config";
 
 export default function Login() {
-  const [email, setEmail] = useState("admin.kim@gmail.com");
-  const [password, setPassword] = useState("kimkantor1");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
