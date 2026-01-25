@@ -120,6 +120,7 @@ export default function Login() {
               className="w-full px-4 py-2 bg-white/10 border border-white/30 rounded-lg text-(--text1) placeholder-white/50 focus:outline-none focus:border-white/60"
               required
               disabled={loading}
+              placeholder="email@example.com"
             />
           </div>
 
@@ -136,6 +137,7 @@ export default function Login() {
                 className="w-full px-4 py-2 bg-white/10 border border-white/30 rounded-lg text-(--text1) placeholder-white/50 focus:outline-none focus:border-white/60 pr-10"
                 required
                 disabled={loading}
+                placeholder="••••••••"
               />
               <button
                 type="button"
