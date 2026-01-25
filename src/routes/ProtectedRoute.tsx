@@ -23,10 +23,6 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
 
   // Jika belum authenticated
   if (!isAuthenticated) {
-    console.log(
-      "🚫 [ProtectedRoute] User not authenticated, redirecting to login",
-    );
-
     return (
       <Navigate
         to={`/login?redirect=${encodeURIComponent(location.pathname)}`}

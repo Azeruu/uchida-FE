@@ -14,16 +14,10 @@ export const useAuth = () => {
 
   const checkAuth = async () => {
     try {
-      console.log("\n🔍 [useAuth] Checking authentication...");
-
       // 1. Cek localStorage dulu
       const storedToken = localStorage.getItem("auth_token");
-      console.log(
-        `   localStorage.auth_token: ${storedToken ? "✅ Found" : "❌ Not found"}`,
-      );
 
       if (!storedToken) {
-        console.log(`   → No token, user not authenticated`);
         setIsAuthenticated(false);
         setUser(null);
         setLoading(false);
@@ -31,7 +25,6 @@ export const useAuth = () => {
       }
 
       // 2. Verify token dengan server
-      console.log(`   → Verifying token with server...`);
       const response = await fetch(`${config.apiUrl}/me`, {
         method: "GET",
         headers: {
@@ -40,16 +33,11 @@ export const useAuth = () => {
         credentials: "include",
       });
 
-      console.log(`   /me status: ${response.status}`);
-
       if (response.ok) {
         const data = await response.json();
-        console.log(`   ✅ Token valid`);
-        console.log(`   👤 User: ${data.user?.email}`);
         setUser(data.user);
         setIsAuthenticated(true);
       } else {
-        console.log(`   ❌ Token invalid (${response.status})`);
         setUser(null);
         setIsAuthenticated(false);
         // Jangan hapus token, biarkan tetap di localStorage
@@ -65,8 +53,6 @@ export const useAuth = () => {
 
   const logout = async () => {
     try {
-      console.log("\n🚪 [useAuth] Logout initiated");
-
       // Call backend logout endpoint (optional)
       await fetch(`${config.apiUrl}/logout`, {
         method: "POST",
@@ -82,8 +68,6 @@ export const useAuth = () => {
 
       setIsAuthenticated(false);
       setUser(null);
-
-      console.log("   ✅ Logged out");
     } catch (err: any) {
       console.error("   ❌ Logout error:", err.message);
       localStorage.removeItem("auth_token");
@@ -94,7 +78,6 @@ export const useAuth = () => {
   };
 
   const refetch = async () => {
-    console.log("🔄 [useAuth] Manual refetch triggered");
     setLoading(true);
     checkAuth();
   };

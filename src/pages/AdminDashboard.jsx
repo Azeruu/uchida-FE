@@ -1121,7 +1121,7 @@ const handleSave = async () => {
 
         {/* Footer Info */}
         <div className="mt-6 text-center text-sm text-gray-500">
-          Data diambil dari Supabase Database • Auto-refresh setiap klik tombol
+          Data diambil dari Prisma Database • Auto-refresh setiap klik tombol
           Refresh
         </div>
       </div>

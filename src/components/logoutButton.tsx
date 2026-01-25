@@ -17,16 +17,12 @@ export default function LogoutButton() {
     setIsLoggingOut(true);
 
     try {
-      console.log("🚪 User initiated logout");
-
       // Call logout dari useAuth hook
       // Ini akan handle:
       // 1. Call backend /logout endpoint
       // 2. Clear localStorage
       // 3. Reset auth state
       await logout();
-
-      console.log("✅ Logout completed");
 
       // Redirect ke login page
       navigate("/login", { replace: true });

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Lock, Mail, Eye, EyeOff } from "lucide-react";
+import { Lock, Mail, Eye, EyeOff, Notebook, MoveLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import config from "../config";
 
@@ -17,9 +17,6 @@ export default function Login() {
     setLoading(true);
 
     try {
-      console.log("\n🔐 [LOGIN] Submitting...");
-      console.log(`   Email: ${email}`);
-
       // Post login
       const response = await fetch(`${config.apiUrl}/login`, {
         method: "POST",
@@ -30,20 +27,14 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       });
 
-      console.log(`   Response status: ${response.status}`);
-
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.message || "Login failed");
       }
 
-      console.log(`   ✅ Login successful`);
-      console.log(`   🍪 Cookie set by server`);
-
       // Save token to localStorage as backup
       if (data.token) {
-        console.log(`   💾 Saving token to localStorage`);
         localStorage.setItem("auth_token", data.token);
       }
 
@@ -56,7 +47,6 @@ export default function Login() {
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Navigate ke admin
-      console.log(`   🚀 Navigating to /admin`);
       navigate("/admin", { replace: true });
     } catch (err: any) {
       const errorMsg = err.message || "Login failed";
@@ -68,15 +58,28 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background to-backgroun/40 flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md flex justify-between items-center p-2">
+        <button
+          onClick={() => (window.location.href = "/")}
+          className="text-(--text1) w-35 border border-(--border1)/40 p-2 text-xs bg-gray-100/10 rounded-md hover:bg-(--hover1)/30 font-medium"
+        >
+          ← Kembali ke Menu
+        </button>
+        <button
+          onClick={() => (window.location.href = "/test")}
+          className="text-(--text2) w-auto border border-(--border2)/40 p-2 text-xs bg-gray-100/10 rounded-md hover:bg-(--hover2)/30 font-medium"
+        >
+          Test Sebagai Guest →
+        </button>
+      </div>
       <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 w-full max-w-md border border-white/20">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 bg-transparent border-2 border-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Notebook className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white">Uchida Test</h1>
-          <p className="text-indigo-100 text-sm mt-2">Admin Dashboard</p>
         </div>
 
         {/* Error */}
@@ -91,7 +94,7 @@ export default function Login() {
           onClick={() => navigate("/test")}
           className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg mb-4"
         >
-          🎯 Test as Guest
+          🎯 Mulai Test Sebagai Guest (Tamu)
         </button>
 
         <div className="relative mb-4">
@@ -114,7 +117,7 @@ export default function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 bg-white/10 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white/60"
+              className="w-full px-4 py-2 bg-white/10 border border-white/30 rounded-lg text-(--text1) placeholder-white/50 focus:outline-none focus:border-white/60"
               required
               disabled={loading}
             />
@@ -130,7 +133,7 @@ export default function Login() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 bg-white/10 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white/60 pr-10"
+                className="w-full px-4 py-2 bg-white/10 border border-white/30 rounded-lg text-(--text1) placeholder-white/50 focus:outline-none focus:border-white/60 pr-10"
                 required
                 disabled={loading}
               />
@@ -153,16 +156,14 @@ export default function Login() {
             disabled={loading}
             className="w-full bg-indigo-500 hover:bg-indigo-600 disabled:bg-gray-500 text-white font-bold py-3 rounded-lg"
           >
-            {loading ? "Logging in..." : "Login Admin"}
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
         {/* Demo Creds */}
-        <div className="mt-6 p-3 bg-white/5 border border-white/10 rounded-lg text-xs text-white/60">
-          <p className="font-semibold mb-1">📝 Demo:</p>
-          <p>Email: admin.kim@gmail.com</p>
-          <p>Password: kimkantor1</p>
-        </div>
+        {/* <div className="mt-6 p-3 bg-white/5 border border-white/10 rounded-lg text-xs text-white/60">
+              
+        </div> */}
       </div>
     </div>
   );

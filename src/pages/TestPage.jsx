@@ -63,13 +63,6 @@ export default function TestPage() {
         setTotalQuestions(cfg.questionCount || 525);
         setMaxIncorrectAnswers(cfg.maxIncorrectAnswers ?? 7);
         setMinQuestionsPerMinute(cfg.minQuestionsPerMinute ?? 35);
-        console.log("Loaded config:", {
-          questionCount: cfg.questionCount,
-          durationSeconds: cfg.durationSeconds,
-          maxIncorrectAnswers: cfg.maxIncorrectAnswers,
-          minQuestionsPerMinute: cfg.minQuestionsPerMinute,
-          pairsLength: sanitizedPairs.length,
-        });
       }
     } catch (e) {
       console.error("Failed to load config", e);
@@ -266,7 +259,6 @@ export default function TestPage() {
         const data = await response.json();
 
         if (response.ok) {
-          console.log("Test result saved successfully:", data);
           toast.success("Hasil test berhasil disimpan!");
         } else {
           console.error("Failed to save test result:", data.error);
