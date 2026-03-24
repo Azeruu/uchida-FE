@@ -6,6 +6,11 @@ import {
   Play,
   User,
   Mail,
+  GraduationCap,
+  Clock,
+  TrendingUp,
+  BarChart,
+  X,
 } from "lucide-react";
 import {
   LineChart,
@@ -18,7 +23,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { toast } from "sonner";
-import config from "../config";
+import { useUser } from "@clerk/clerk-react";
+import BackgroundMath from "../components/BackgroundMath";
 
 const TEST_DURATION = 15 * 60; // 15 menit dalam detik
 
@@ -49,6 +55,14 @@ export default function TestPage() {
   const [questionsOverTime, setQuestionsOverTime] = useState([]);
 
   const videoRef = useRef(null);
+  const { user } = useUser();
+
+  useEffect(() => {
+    if (user) {
+      setParticipantName(prev => prev || user.fullName || "");
+      setParticipantEmail(prev => prev || user.primaryEmailAddress?.emailAddress || "");
+    }
+  }, [user]);
 
   // Load config from backend
   const loadConfig = async () => {
@@ -360,46 +374,32 @@ export default function TestPage() {
   
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-4">
-          <button
-            onClick={() => (window.location.href = "/")}
-            className="text-(--text1) w-35 border border-(--border1) p-2 text-xs bg-gray-100/10 rounded-md hover:bg-(--hover1)/30 font-medium"
-          >
-            ← Kembali ke Menu
-          </button>
-          <button
-            onClick={() => (window.location.href = "/admin")}
-            className="text-(--text2) w-35 border border-(--border2) p-2 text-xs bg-gray-100/10 rounded-md hover:bg-(--hover2)/30 font-medium"
-          >
-            Admin →
-          </button>
-        </div>
-        <div className="bg-white/10 rounded-lg shadow-lg p-6 mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-center text-foreground/60 flex items-center justify-center gap-2">
-            <Calculator className="w-8 h-8" />
-            Test Uchida
-          </h1>
-        </div>
+    <div className="min-h-screen bg-indigo-800 relative p-4 overflow-x-hidden">
+      <BackgroundMath />
+      <div className="max-w-4xl mx-auto relative z-10">
 
         {/* Registration Stage */}
         {stage === "register" && (
-          <div className="bg-white/10 rounded-lg shadow-lg p-8">
-            <div className="mb-6 text-center">
-              <h2 className="text-2xl md:text-3xl font-bold text-(--text1) mb-2">
+          <div className="bg-white/10 backdrop-blur-md rounded-[2.5rem] border border-indigo-100/20 shadow-2xl p-8 animate-in fade-in zoom-in duration-500">
+              <button
+                onClick={() => (window.location.href = "/")}
+                className="text-indigo-200 w-35 border border-indigo-100/30 p-2 text-xs bg-white/5 rounded-full hover:bg-white/10 font-medium mb-6 transition-colors"
+              >
+                ← Kembali ke Menu
+              </button>
+            <div className="mb-8 text-center">
+              <h2 className="text-3xl font-bold text-white mb-2">
                 Registrasi Peserta
               </h2>
-              <p className="text-(--text2) text-xs">
-                Silakan isi data Anda terlebih dahulu
+              <p className="text-indigo-200 text-sm">
+                Silakan lengkapi data Anda untuk memulai evaluasi
               </p>
             </div>
 
             <div className="space-y-4 mb-6">
               <div>
-                <label className="block text-sm md:text-lg font-medium text-(--text1) mb-2">
-                  <User className="w-4 h-4 inline mr-1" />
+                <label className="block text-sm font-semibold text-indigo-100 mb-2">
+                  <User className="w-4 h-4 inline mr-2 text-indigo-300" />
                   Nama Lengkap
                 </label>
                 <input
@@ -407,54 +407,55 @@ export default function TestPage() {
                   value={participantName}
                   onChange={(e) => setParticipantName(e.target.value)}
                   placeholder="Masukkan nama lengkap"
-                  className="w-full px-4 py-3 border-2 border-(--border1) rounded-lg focus:border-indigo-500 focus:outline-none"
+                  className="w-full px-4 py-3 bg-white/5 border border-indigo-100/20 rounded-xl text-white placeholder-indigo-300/40 focus:border-indigo-400 focus:outline-none transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm md:text-lg font-medium text-(--text1)  mb-2">
-                  <Mail className="w-4 h-4 inline mr-1" />
+                <label className="block text-sm font-semibold text-indigo-100 mb-2">
+                  <Mail className="w-4 h-4 inline mr-2 text-indigo-300" />
                   Email
                 </label>
                 <input
                   type="email"
                   value={participantEmail}
                   onChange={(e) => setParticipantEmail(e.target.value)}
+                  readOnly={!!user?.primaryEmailAddress?.emailAddress}
                   placeholder="Masukkan email"
-                  className="w-full px-4 py-3 border-2 border-(--border1) rounded-lg focus:border-indigo-500 focus:outline-none"
+                  className={`w-full px-4 py-3 bg-white/5 border border-indigo-100/20 rounded-xl text-white placeholder-indigo-300/40 focus:border-indigo-400 focus:outline-none transition-all ${user?.primaryEmailAddress?.emailAddress ? 'opacity-60 cursor-not-allowed' : ''}`}
                 />
               </div>
               <div>
-                <label className="block text-sm md:text-lg font-medium text-(--text1) mb-2">
-                  <Mail className="w-4 h-4 inline mr-1" />
+                <label className="block text-sm font-semibold text-indigo-100 mb-2">
+                  <GraduationCap className="w-4 h-4 inline mr-2 text-indigo-300" />
                   Pendidikan Terakhir
                 </label>
                 <input
                   type="text"
                   value={participantPendidikan}
                   onChange={(e) => setParticipantPendidikan(e.target.value)}
-                  placeholder="Masukkan Pendidikan Terakhir ( Contoh : SMK Teknik Elektronika)"
-                  className="w-full px-4 py-3 border-2 border-(--border1) rounded-lg focus:border-indigo-500 focus:outline-none"
+                  placeholder="Contoh: SMK Teknik Elektronika"
+                  className="w-full px-4 py-3 bg-white/5 border border-indigo-100/20 rounded-xl text-white placeholder-indigo-300/40 focus:border-indigo-400 focus:outline-none transition-all"
                 />
               </div>
               <div>
-                <label className="block text-sm md:text-lg font-medium text-(--text1) mb-2">
-                  <Mail className="w-4 h-4 inline mr-1" />
-                  Nomor Handphone Pribadi
+                <label className="block text-sm font-semibold text-indigo-100 mb-2">
+                  <CheckCircle className="w-4 h-4 inline mr-2 text-indigo-300" />
+                  Nomor Handphone
                 </label>
                 <input
                   type="text"
                   value={participantNoHp}
                   onChange={(e) => setParticipantNoHp(e.target.value)}
-                  placeholder="Masukkan Nomor Handphone Pribadi"
-                  className="w-full px-4 py-3 border-2 border-(--border1) rounded-lg focus:border-indigo-500 focus:outline-none"
+                  placeholder="Masukkan nomor HP aktif"
+                  className="w-full px-4 py-3 bg-white/5 border border-indigo-100/20 rounded-xl text-white placeholder-indigo-300/40 focus:border-indigo-400 focus:outline-none transition-all"
                 />
               </div>
             </div>
 
             <button
               onClick={handleRegister}
-              className="w-full bg-(--button1) hover:bg-(--hover1) text-white font-bold py-3 rounded-lg transition"
+              className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-black py-4 rounded-2xl transition-all shadow-lg hover:shadow-indigo-500/30 transform hover:-translate-y-1 mt-4"
             >
               Lanjutkan
             </button>
@@ -463,34 +464,32 @@ export default function TestPage() {
 
         {/* Ready Stage */}
         {stage === "ready" && (
-          <div className="bg-white/10 rounded-lg shadow-lg p-8 text-center">
+          <div className="bg-white/10 backdrop-blur-md rounded-[2.5rem] border border-indigo-100/20 shadow-2xl p-8 text-center animate-in fade-in zoom-in duration-500">
             <div className="mb-6">
-              <div className="w-24 h-24 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-12 h-12 text-(--text2)" />
+              <div className="w-24 h-24 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-indigo-400/30">
+                <CheckCircle className="w-12 h-12 text-indigo-300" />
               </div>
-              <h2 className="text-2xl font-bold text-(--text2) mb-2">
+              <h2 className="text-3xl font-bold text-white mb-2">
                 Halo, {participantName}!
               </h2>
-              <p className="text-(--text1) mb-4">
-                Anda akan mengerjakan <strong>{totalQuestions} soal</strong>{" "}
-                penjumlahan dalam{" "}
-                <strong>{Math.floor(timeLeft / 60)} menit</strong> ({timeLeft} detik).
+              <p className="text-indigo-200 mb-6">
+                Anda akan mengerjakan <strong className="text-white">{totalQuestions} soal</strong> penjumlahan dalam <strong className="text-white">{Math.floor(timeLeft / 60)} menit</strong>.
               </p>
-              <div className="bg-yellow-50/10 border border-(--aksen1) rounded-lg p-3 text-sm text-(--aksen1) mb-2">
-                <strong>Persyaratan Kelulusan:</strong> Harus menjawab minimal{" "}
-                <strong>35 penjumlahan per menit</strong> di setiap menit untuk lulus.
+              <div className="bg-indigo-900/40 border border-indigo-400/30 rounded-2xl p-4 text-sm text-indigo-100 mb-6">
+                <strong className="text-yellow-400">Persyaratan Kelulusan:</strong><br/>
+                Minimal menjawab <strong className="text-white">35 soal per menit</strong> secara konsisten.
               </div>
-              <div className="bg-indigo-50/10 rounded-lg p-4 text-sm text-(--text1)">
-                <p>✓ Pastikan koneksi internet stabil</p>
-                <p>✓ Pastikan kamera dapat diakses</p>
-                <p>✓ Kerjakan dengan jujur dan teliti</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-[10px] uppercase tracking-widest font-black text-indigo-300">
+                <div className="bg-white/5 py-2 rounded-lg border border-indigo-100/10">Koneksi Stabil</div>
+                <div className="bg-white/5 py-2 rounded-lg border border-indigo-100/10">Kamera Aktif</div>
+                <div className="bg-white/5 py-2 rounded-lg border border-indigo-100/10">Jujur & Teliti</div>
               </div>
             </div>
             <button
               onClick={handleStartCamera}
-              className="bg-(--button1) hover:bg-(--hover1) text-white font-bold py-3 px-8 rounded-lg flex items-center gap-2 mx-auto transition"
+              className="bg-indigo-500 hover:bg-indigo-600 text-white font-black py-4 px-10 rounded-2xl flex items-center gap-3 mx-auto transition-all shadow-lg hover:shadow-indigo-500/30 transform hover:-translate-y-1"
             >
-              <Camera className="w-5 h-5" />
+              <Camera className="w-6 h-6" />
               Saya Siap
             </button>
           </div>
@@ -498,14 +497,12 @@ export default function TestPage() {
 
         {/* Camera Stage */}
         {stage === "camera" && (
-          <div className="bg-white/10 rounded-lg shadow-lg p-8">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-(--text1) mb-4 text-center">
-                Kamera Aktif
-              </h2>
+          <div className="bg-white/10 backdrop-blur-md rounded-[2.5rem] border border-indigo-100/20 shadow-2xl p-8 animate-in fade-in zoom-in duration-500">
+            <div className="mb-8 text-center">
+              <h2 className="text-3xl font-bold text-white mb-4">Kamera Aktif</h2>
               <div
-                className="relative bg-black rounded-lg overflow-hidden"
-                style={{ aspectRatio: "16/9", width: "80%", margin: "0 auto" }}
+                className="relative bg-indigo-950/50 rounded-3xl overflow-hidden border-4 border-indigo-100/10 shadow-inner"
+                style={{ aspectRatio: "16/9", maxWidth: "600px", margin: "0 auto" }}
               >
                 <video
                   ref={videoRef}
@@ -514,7 +511,7 @@ export default function TestPage() {
                   muted
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-2">
+                <div className="absolute top-4 left-4 bg-red-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest flex items-center gap-2 border border-red-400/50 shadow-lg">
                   <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                   RECORDING
                 </div>
@@ -522,21 +519,21 @@ export default function TestPage() {
             </div>
             <button
               onClick={handleStartTest}
-              className="bg-(--button1) hover:bg-(--hover1) text-white font-bold py-3 px-8 rounded-lg flex items-center gap-2 mx-auto transition"
+              className="bg-green-500 hover:bg-green-600 text-white font-black py-4 px-10 rounded-2xl flex items-center gap-3 mx-auto transition-all shadow-lg hover:shadow-green-500/30 transform hover:-translate-y-1"
             >
-              <Play className="w-5 h-5" />
-              Mulai Test
+              <Play className="w-6 h-6 fill-current" />
+              Mulai Evaluasi
             </button>
           </div>
         )}
 
         {/* Testing Stage */}
         {stage === "testing" && (
-          <div className="space-y-6">
-            <div className="bg-white/10 rounded-lg shadow-lg p-4 flex item-center justify-center">
+          <div className="space-y-6 animate-in fade-in duration-700">
+            <div className="bg-white/10 backdrop-blur-sm rounded-3xl border border-indigo-100/10 p-4 flex items-center justify-center">
               <div
-                className="relative bg-black rounded-lg overflow-hidden"
-                style={{ aspectRatio: "16/9", maxHeight: "200px" }}
+                className="relative bg-indigo-950/50 rounded-2xl overflow-hidden border-2 border-indigo-100/10 shadow-lg"
+                style={{ aspectRatio: "16/9", maxHeight: "150px" }}
               >
                 <video
                   ref={videoRef}
@@ -545,207 +542,142 @@ export default function TestPage() {
                   muted
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold flex items-center gap-1">
+                <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-0.5 rounded-full text-[8px] font-black tracking-widest flex items-center gap-1 border border-red-400/30">
                   <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
                   REC
                 </div>
               </div>
             </div>
 
-            <div className="bg-white/10 rounded-lg shadow-lg p-8">
-              <div className="text-center mb-6">
-                <div className="text-sm text-gray-500 mb-2">
-                  Soal {questionNumber} dari {totalQuestions} • Sisa waktu{" "}
-                  {Math.floor(timeLeft / 60)} menit {timeLeft % 60} detik
+            <div className="bg-white/10 backdrop-blur-md rounded-[2.5rem] border border-indigo-100/20 shadow-2xl p-8 sm:p-12 relative overflow-hidden">
+              <div className="text-center mb-8">
+                <div className="text-xs uppercase tracking-widest font-black text-indigo-300 mb-2">
+                  Soal {questionNumber} / {totalQuestions} • Sisa {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}
                 </div>
-                <div className="text-6xl font-bold text-(--button1) mb-4">
-                  {currentQuestion.num1} + {currentQuestion.num2}
-                </div>
-                <div className="text-2xl font-semibold text-(--border2)">
-                  = ?
+                <div className="text-7xl sm:text-8xl font-black text-white mb-6 tracking-tighter drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+                  {currentQuestion.num1} <span className="text-indigo-400">+</span> {currentQuestion.num2}
                 </div>
               </div>
 
-              <div className="mb-6">
-                <div className="bg-white/10 border-2 border-green-300 rounded-lg p-4 text-3xl font-bold text-center min-h-[60px] flex items-center justify-center">
-                  {userAnswer || "0"}
+              <div className="mb-10 max-w-xs mx-auto">
+                <div className="bg-indigo-900/60 border-2 border-indigo-400/50 rounded-2xl p-6 text-5xl font-black text-green-400 text-center shadow-inner min-h-[100px] flex items-center justify-center">
+                  {userAnswer || "?"}
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="grid grid-cols-5 gap-3 max-w-lg mx-auto">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num) => (
                   <button
                     key={num}
                     onClick={() => handleNumberClick(num.toString())}
-                    className="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 font-bold text-2xl py-4 rounded-lg transition"
+                    className="bg-white/10 hover:bg-white/20 border border-indigo-100/10 text-white font-black text-3xl py-6 rounded-2xl transition-all active:scale-90"
                   >
                     {num}
                   </button>
                 ))}
               </div>
-
-              {questionNumber >= totalQuestions && (
-                <button
-                  onClick={() => finishTest(answers)}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-lg transition"
-                >
-                  Selesai
-                </button>
-              )}
             </div>
           </div>
         )}
 
-        {/* ✅ FINISHED STAGE - DENGAN GRAFIK */}
+        {/* ✅ FINISHED STAGE */}
         {stage === "finished" && testResult && (
-          <div className="space-y-6">
-            <div className="bg-white/10 rounded-lg shadow-lg p-8">
-              <div className="text-center mb-6">
-                <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-12 h-12 text-green-600" />
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            <div className="bg-white/10 backdrop-blur-md rounded-[2.5rem] border border-indigo-100/20 shadow-2xl p-10">
+              <div className="text-center mb-10">
+                <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-400/30">
+                  <CheckCircle className="w-12 h-12 text-green-400" />
                 </div>
-                <h2 className="text-3xl font-bold text-white mb-2">
-                  Test Selesai!
-                </h2>
+                <h2 className="text-4xl font-black text-white mb-2 tracking-tight">Evaluasi Selesai!</h2>
                 {isSubmitting ? (
-                  <p className="text-gray-400">Menyimpan hasil test...</p>
+                  <p className="text-indigo-200 animate-pulse">Menghubungkan ke server...</p>
                 ) : error ? (
                   <p className="text-red-400">⚠ {error}</p>
                 ) : (
-                  <p className="text-green-400">
-                    ✓ Hasil telah disimpan ke database
-                  </p>
+                  <p className="text-green-400 font-bold">Data pengerjaan berhasil terverifikasi</p>
                 )}
               </div>
 
-              <div className="bg-green-100 rounded-lg p-6 mb-6">
-                <div className="grid grid-rows-4 gap-4 text-center mb-4">
-                  <div>
-                    <div className="text-3xl font-bold text-indigo-600">
-                      {testResult.correctAnswers}/{testResult.totalQuestions}
-                    </div>
-                    <div className="text-sm text-gray-600">Benar</div>
+              <div className="bg-indigo-900/40 backdrop-blur-xl rounded-[2.5rem] p-8 border border-indigo-400/20 shadow-inner">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center mb-12">
+                  <div className="space-y-2">
+                    <div className="text-5xl font-black text-white drop-shadow-sm">{testResult.correctAnswers}</div>
+                    <div className="text-[10px] uppercase tracking-[0.2em] font-black text-indigo-400">Total Benar</div>
                   </div>
-                  <div>
-                    <div className="text-3xl font-bold text-indigo-600">
-                      {testResult.score.toFixed(1)}%
-                    </div>
-                    <div className="text-sm text-gray-600">Akurasi</div>
+                  <div className="space-y-2">
+                    <div className="text-5xl font-black text-indigo-300 drop-shadow-sm">{testResult.score.toFixed(0)}<span className="text-xl">%</span></div>
+                    <div className="text-[10px] uppercase tracking-[0.2em] font-black text-indigo-400">Akurasi</div>
                   </div>
-                  <div>
-                    <div className="text-3xl font-bold text-indigo-600">
-                      {Math.floor(testResult.totalTime / 60)} menit
-                    </div>
-                    <div className="text-sm text-gray-600">Waktu</div>
+                  <div className="space-y-2">
+                    <div className="text-5xl font-black text-indigo-300 drop-shadow-sm">{Math.floor(testResult.totalTime / 60)}<span className="text-xl">m</span></div>
+                    <div className="text-[10px] uppercase tracking-[0.2em] font-black text-indigo-400">Waktu</div>
                   </div>
-                  <div>
-                    <div
-                      className={`text-3xl font-bold ${
-                        testResult.isPassed ? "text-green-600" : "text-red-600"
-                      }`}
-                    >
-                      {testResult.isPassed ? "LULUS" : "TIDAK LULUS"}
+                  <div className="space-y-2">
+                    <div className={`text-4xl font-black tracking-tighter drop-shadow-sm ${testResult.isPassed ? "text-green-400" : "text-red-400"}`}>
+                      {testResult.isPassed ? "PASSED" : "FAILED"}
                     </div>
-                    <div className="text-sm text-gray-600">
-                      {testResult.isPassed
-                        ? "Selamat anda lulus!"
-                        : `Setiap menit harus minimal 35 soal untuk lulus`}
-                    </div>
+                    <div className="text-[10px] uppercase tracking-[0.2em] font-black text-indigo-400">Status</div>
                   </div>
                 </div>
 
-                <div className="border-t border-indigo-200 pt-4">
-                  <p className="text-sm text-gray-600">
-                    <strong>Nama:</strong> {participantName}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <strong>Email:</strong> {participantEmail}
-                  </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-indigo-100/10 pt-8">
+                   <div className="bg-white/5 p-5 rounded-3xl border border-indigo-100/5">
+                      <div className="text-[10px] uppercase tracking-widest font-black text-indigo-400 mb-1">Nama Peserta</div>
+                      <div className="text-white font-bold">{participantName}</div>
+                   </div>
+                   <div className="bg-white/5 p-5 rounded-3xl border border-indigo-100/5">
+                      <div className="text-[10px] uppercase tracking-widest font-black text-indigo-400 mb-1">Email Terdaftar</div>
+                      <div className="text-white font-bold">{participantEmail}</div>
+                   </div>
                 </div>
               </div>
             </div>
 
-            {/* ✅ GRAFIK 1: WAKTU PER SOAL */}
-            {timePerQuestion && timePerQuestion.length > 0 && (
-              <div className="bg-white/10 rounded-lg shadow-lg p-8">
-                <h3 className="text-xl font-bold text-white mb-4">
-                  📊 Waktu Pengerjaan per Soal
-                </h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={timePerQuestion}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                    <XAxis 
-                      dataKey="soal" 
-                      stroke="#999"
-                      label={{ value: 'Nomor Soal', position: 'insideBottom', offset: -5, fill: '#999' }}
-                    />
-                    <YAxis 
-                      stroke="#999"
-                      label={{ value: 'Waktu (detik)', angle: -90, position: 'insideLeft', fill: '#999' }}
-                    />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #4b5563' }}
-                      labelStyle={{ color: '#fff' }}
-                    />
-                    <Legend />
-                    <Line 
-                      type="monotone" 
-                      dataKey="waktu" 
-                      stroke="#4f46e5" 
-                      strokeWidth={2}
-                      dot={{ fill: '#4f46e5', r: 3 }}
-                      name="Waktu (detik)"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-                <p className="text-sm text-gray-400 mt-4 text-center">
-                  Rata-rata waktu: {(testResult.totalTime / testResult.totalQuestions).toFixed(2)} detik/soal
-                </p>
-              </div>
-            )}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* ✅ GRAFIK 1: WAKTU PER SOAL */}
+              {timePerQuestion && timePerQuestion.length > 0 && (
+                <div className="bg-white/10 backdrop-blur-md rounded-[2.5rem] border border-indigo-100/20 shadow-2xl p-8">
+                  <h3 className="text-lg font-black text-white mb-8 uppercase tracking-widest flex items-center gap-3">
+                    <BarChart className="w-5 h-5 text-indigo-400" /> Waktu per Soal
+                  </h3>
+                  <div className="h-[250px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={timePerQuestion}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                        <XAxis dataKey="soal" hide />
+                        <YAxis stroke="rgba(255,255,255,0.3)" fontSize={10} tickLine={false} axisLine={false} />
+                        <Tooltip contentStyle={{ backgroundColor: "#1e1b4b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px" }} />
+                        <Line type="monotone" dataKey="waktu" stroke="#818cf8" strokeWidth={4} dot={false} animationDuration={2000} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
 
-            {/* ✅ GRAFIK 2: PRODUKTIVITAS PER MENIT */}
-            {questionsOverTime && questionsOverTime.length > 0 && (
-              <div className="bg-white/10 rounded-lg shadow-lg p-8">
-                <h3 className="text-xl font-bold text-white mb-4">
-                  📈 Produktivitas per Menit
-                </h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={questionsOverTime}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                    <XAxis 
-                      dataKey="menit" 
-                      stroke="#999"
-                      label={{ value: 'Menit ke-', position: 'insideBottom', offset: -5, fill: '#999' }}
-                    />
-                    <YAxis 
-                      stroke="#999"
-                      label={{ value: 'Jumlah Soal yang Dijawab', angle: -90, position: 'insideLeft', fill: '#999' }}
-                    />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #4b5563' }}
-                      labelStyle={{ color: '#fff' }}
-                    />
-                    <Legend />
-                    <Line 
-                      type="monotone" 
-                      dataKey="jumlahSoal" 
-                      stroke="#10b981" 
-                      strokeWidth={2}
-                      dot={{ fill: '#10b981', r: 3 }}
-                      name="Jumlah Soal Dijawab"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-                <p className="text-sm text-gray-400 mt-4 text-center">
-                  Total waktu test: {Math.ceil(testResult.totalTime / 60)} menit
-                </p>
-              </div>
-            )}
+              {/* ✅ GRAFIK 2: PRODUKTIVITAS PER MENIT */}
+              {questionsOverTime && questionsOverTime.length > 0 && (
+                <div className="bg-white/10 backdrop-blur-md rounded-[2.5rem] border border-indigo-100/20 shadow-2xl p-8">
+                  <h3 className="text-lg font-black text-white mb-8 uppercase tracking-widest flex items-center gap-3">
+                    <TrendingUp className="w-5 h-5 text-green-400" /> Produktivitas
+                  </h3>
+                  <div className="h-[250px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={questionsOverTime}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                        <XAxis dataKey="menit" stroke="rgba(255,255,255,0.3)" fontSize={10} tickLine={false} axisLine={false} />
+                        <YAxis stroke="rgba(255,255,255,0.3)" fontSize={10} tickLine={false} axisLine={false} />
+                        <Tooltip contentStyle={{ backgroundColor: "#1e1b4b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px" }} />
+                        <Line type="monotone" dataKey="jumlahSoal" stroke="#10b981" strokeWidth={4} dot={false} animationDuration={2500} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+            </div>
 
             <button
               onClick={() => window.location.reload()}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition"
+              className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-black py-4 rounded-2xl transition-all shadow-lg hover:shadow-indigo-500/30 transform hover:-translate-y-1"
             >
               Mulai Test Baru
             </button>

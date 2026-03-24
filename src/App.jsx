@@ -1,8 +1,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/HomePage";
-import Login from "./pages/LoginPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import AdminRoute from "./routes/AdminRoute";
 import TestPage from "./pages/TestPage";
 // import Coba from "./pages/coba";
 
@@ -10,17 +10,20 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/test" element={<TestPage />} />
+      <Route path="/test" element={
+        <ProtectedRoute>
+          <TestPage />
+        </ProtectedRoute>
+      } />
       {/* <Route path="/coba"  element={<Coba/>}/> */}
 
       {/* Protected routes */}
       <Route
         path="/admin/*"
         element={
-          <ProtectedRoute>
+          <AdminRoute>
             <AdminDashboard />
-          </ProtectedRoute>
+          </AdminRoute>
         }
       />
 
